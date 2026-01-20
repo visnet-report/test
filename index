@@ -1,0 +1,1379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Marketing Performance Metrics</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+
+    body.report-body {
+      font-family: 'Roboto', Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      box-sizing: border-box;
+    }
+    .report-header {
+      display: flex;
+      align-items: center;
+      background-color: #220639;
+      padding: 10px 20px;
+      color: white;
+      flex-shrink: 0;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .report-header img.report-logo {
+      height: 50px;
+      width: auto;
+      margin-right: 15px;
+    }
+    .report-header h1 {
+      font-size: 28px;
+      margin: 0;
+      flex-grow: 1;
+      text-align: center;
+    }
+    .toggle-sidebar-btn {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 20px;
+      cursor: pointer;
+      margin-right: 10px;
+    }
+    .report-content-container {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+    .report-sidebar {
+      width: 250px;
+      background-color: #220639;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      padding: 10px;
+      box-sizing: border-box;
+      flex-shrink: 0;
+      overflow-y: auto;
+      max-height: 100vh;
+      transition: width 0.3s ease;
+    }
+    .report-sidebar.collapsed {
+      width: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+    .report-sidebar h2 {
+      color: white;
+      font-weight: 700;
+      margin-bottom: 10px;
+      text-align: center;
+      font-size: 14px;
+    }
+    .report-sidebar button {
+      background-color: #00AAE4;
+      color: #220639;
+      border: none;
+      padding: 5px;
+      cursor: pointer;
+      border-radius: 5px;
+      margin-bottom: 5px;
+      font-weight: 700;
+      text-align: left;
+      width: 100%;
+      box-sizing: border-box;
+      display: flex;
+      align-items: center;
+      position: relative;
+    }
+    .report-sidebar button i {
+      margin-right: 8px;
+    }
+    .report-sidebar button[title]:hover::after {
+      content: attr(title);
+      position: absolute;
+      left: 105%;
+      background: #333;
+      color: #fff;
+      padding: 5px 8px;
+      border-radius: 4px;
+      white-space: nowrap;
+    }
+    .report-sidebar button:hover, .report-sidebar button.active {
+      background-color: #131633;
+      color: white;
+    }
+    .report-main-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+    }
+    #reportFrame {
+      display: block;
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+    #loadingIndicator {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 20px;
+      color: #00AAE4;
+      display: none;
+    }
+    #reportErrorMessage {
+      display: none;
+      text-align: center;
+      margin-top: 20px;
+      font-size: 18px;
+      color: red;
+    }
+    #reportPasswordOverlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.9);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      z-index: 9999;
+    }
+    #reportPasswordOverlay input {
+      padding: 10px;
+      font-size: 16px;
+      margin-bottom: 10px;
+      width: 200px;
+      border-radius: 5px;
+      border: none;
+    }
+    #reportPasswordOverlay button {
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #00AAE4;
+      color: #220639;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .report-menu-header {
+      background-color: #00AAE4;
+      color: #1b1e3d;
+      border: none;
+      padding: 10px 15px;
+      cursor: pointer;
+      border-radius: 5px;
+      margin-bottom: 5px;
+      font-weight: 700;
+      text-align: left;
+    }
+    .report-menu-header:hover {
+      background-color: #131633;
+      color: white;
+    }
+    .report-menu-items {
+      display: none;
+      margin-left: 15px;
+    }
+    .report-menu-items button {
+      background-color: #131633;
+      color: white;
+      border: none;
+      padding: 8px 15px;
+      cursor: pointer;
+      border-radius: 5px;
+      margin-bottom: 5px;
+      font-weight: 700;
+      text-align: left;
+    }
+    .report-menu-items button:hover {
+      background-color: #00AAE4;
+      color: #1b1e3d;
+    }
+    .report-menu.open .report-menu-items {
+      display: flex;
+      flex-direction: column;
+    }
+    .report-sidebar button.active {
+      border: 2px solid #00AAE4;
+      border-radius: 5px;
+      box-shadow: 0 0 10px rgba(250, 183, 36, 0.7);
+    }
+    .report-menu.open > .report-menu-header {
+      border: 2px solid #00AAE4;
+      border-radius: 5px;
+      box-shadow: 0 0 10px rgba(250, 183, 36, 0.7);
+    }
+    .report-sidebar button:hover, .report-menu-header:hover {
+      border: 2px solid #131633;
+      box-shadow: 0 0 10px rgba(19, 22, 51, 0.7);
+    }
+    @media (max-width: 768px) {
+      .report-sidebar {
+        position: absolute;
+        z-index: 10;
+        height: 100%;
+        background: #220639;
+      }
+    }
+    #feedbackLink {
+      text-align: center;
+      margin-top: 20px;
+      color: #00AAE4;
+      cursor: pointer;
+    }
+
+    /* === Split-Screen Layout === */
+    #reportFramesContainer {
+      display: flex;
+      width: 100%;
+      height: 100%;
+    }
+    #reportFramesContainer.split {
+      display: flex;
+      flex-direction: row;
+    }
+    #reportFramesContainer iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      transition: width 0.3s ease;
+    }
+    #reportFramesContainer.split iframe {
+      width: 50%;
+      border-left: 2px solid #220639;
+    }
+
+    /* === Floating Control Buttons === */
+    .control-toggle-btn {
+      position: absolute;
+      top: 15px;
+      padding: 6px 10px;
+      font-size: 13px;
+      font-weight: bold;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      z-index: 100;
+      display: none;
+    }
+    #leftControlBtn { left: 15px; background-color: #00AAE4; color: #220639; }
+    #rightControlBtn { right: 15px; background-color: #131633; color: white; }
+
+    .control-toggle-btn.locked {
+      opacity: 0.6;
+      background-color: #444;
+      color: #ccc;
+      cursor: pointer;
+    }
+    .control-toggle-btn:hover {
+      transform: scale(1.05);
+    }
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); }
+    }
+    .control-toggle-btn:not(.locked) {
+      animation: pulse 2s infinite;
+    }
+	  /* =========================
+   Chatbot Widget (LLM-assisted)
+   ========================= */
+#chatbotFab {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: #00AAE4;
+  color: #220639;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  z-index: 9999; /* above overlays */
+  box-shadow: 0 8px 22px rgba(0,0,0,0.35);
+  font-size: 22px;
+}
+#chatbotFab:hover { transform: scale(1.05); }
+
+#chatbotPanel {
+  position: fixed;
+  right: 18px;
+  bottom: 80px;
+  width: 360px;
+  max-width: calc(100vw - 36px);
+  height: 520px;
+  max-height: calc(100vh - 120px);
+  background: #fff;
+  border-radius: 12px;
+  z-index: 9999;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.35);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid rgba(0,0,0,0.1);
+}
+
+.chatbot-hidden { display: none !important; }
+
+#chatbotHeader {
+  background: #220639;
+  color: white;
+  padding: 12px 12px;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: center;
+}
+#chatbotCloseBtn {
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+#chatbotMessages {
+  padding: 12px;
+  flex: 1;
+  overflow-y: auto;
+  background: #fafafa;
+}
+
+.chat-msg { margin: 10px 0; line-height: 1.4; font-size: 14px; }
+.chat-msg.user { text-align: right; }
+
+.chat-bubble {
+  display: inline-block;
+  padding: 10px 12px;
+  border-radius: 12px;
+  max-width: 85%;
+  white-space: pre-wrap;
+}
+
+.chat-msg.user .chat-bubble { background: #00AAE4; color: #220639; }
+.chat-msg.bot  .chat-bubble { background: #220639; color: white; }
+
+#chatbotInputRow {
+  display: flex;
+  gap: 8px;
+  padding: 10px;
+  border-top: 1px solid rgba(0,0,0,0.08);
+}
+#chatbotInput {
+  flex: 1;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(0,0,0,0.2);
+}
+#chatbotSendBtn {
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: none;
+  background: #131633;
+  color: white;
+  cursor: pointer;
+}
+#chatbotSendBtn:hover { opacity: 0.9; }
+
+  </style>
+</head>
+
+<body class="report-body">
+  <div id="reportPasswordOverlay">
+    <input type="password" id="reportPasswordInput" placeholder="Enter Password">
+    <button onclick="reportCheckPassword()">Submit</button>
+  </div>
+
+  <div class="report-header">
+    <button class="toggle-sidebar-btn" onclick="toggleSidebar()">
+      <i class="fas fa-bars"></i>
+    </button>
+    <img src="https://eatechnology.com/assets/img/logo.svg" alt="Company Logo" class="report-logo">
+    <h1>Marketing Activity Dashboard</h1>
+
+    <button id="toggleCompareBtn" style="background:#00AAE4;color:#220639;border:none;padding:8px 12px;border-radius:5px;cursor:pointer;margin-left:10px;font-weight:700;">
+      <i class="fas fa-columns"></i> Compare Reports
+    </button>
+
+    <button id="resetSplitBtn" style="background:#444;color:white;border:none;padding:8px 12px;border-radius:5px;cursor:pointer;margin-left:10px;font-weight:700;display:none;">
+      <i class="fas fa-rotate-left"></i> Reset Split View
+    </button>
+
+    <button id="showUpdatesBtn" style="background:#00AAE4;color:#220639;border:none;padding:8px 12px;border-radius:5px;cursor:pointer;margin-left:10px;font-weight:700;">
+      <i class="fas fa-bell"></i> What's New
+    </button>
+  </div>
+
+  <div class="report-content-container">
+    <div class="report-sidebar" id="sidebar">
+      <h2>Quick Navigation</h2>
+      <input type="text" id="menuSearchInput" placeholder="Search reports..." style="margin-bottom: 10px; padding: 5px; border-radius: 5px; width: 100%; box-sizing: border-box;">
+
+      <div class="report-menu">
+        <button class="report-menu-header"><i class="fas fa-chart-line"></i> MQLs &amp; Key Insights</button>
+        <div class="report-menu-items">
+          <button data-report-id="mqls-fy26"
+                  onclick="reportLoadById('mqls-fy26', this)">
+            <i class="fas fa-chart-pie"></i>FY 26
+          </button>
+
+          <button data-report-id="mqls-am-fy26"
+                  onclick="reportLoadById('mqls-am-fy26', this)">
+            <i class="fas fa-chart-pie"></i> AM FY 26
+          </button>
+
+          <button data-report-id="mqls-visnet-fy26"
+                  onclick="reportLoadById('mqls-visnet-fy26', this)">
+            <i class="fas fa-chart-pie"></i> VisNet FY 26
+          </button>
+
+          <button data-report-id="mqls-am-fy25"
+                  onclick="reportLoadById('mqls-am-fy25', this)">
+            <i class="fas fa-chart-pie"></i> AM FY 25
+          </button>
+
+          <button data-report-id="mqls-visnet-fy25"
+                  onclick="reportLoadById('mqls-visnet-fy25', this)">
+            <i class="fas fa-chart-pie"></i> VisNet FY 25
+          </button>
+        </div>
+      </div>
+
+      <button data-report-id="form-submissions"
+              onclick="reportLoadById('form-submissions', this)">
+        <i class="fas fa-file-signature"></i> Form Submissions
+      </button>
+
+      <div class="report-menu">
+        <button class="report-menu-header"><i class="fas fa-globe"></i> VisNet Website</button>
+        <div class="report-menu-items">
+          <button data-report-id="visnet-ga"
+                  onclick="reportLoadById('visnet-ga', this)">
+            <i class="fas fa-chart-area"></i> Google Analytics
+          </button>
+
+          <button data-report-id="visnet-search-analytics"
+                  onclick="reportLoadById('visnet-search-analytics', this)">
+            <i class="fas fa-search"></i> Search Analytics
+          </button>
+
+          <button data-report-id="visnet-country-traffic"
+                  onclick="reportLoadById('visnet-country-traffic', this)">
+            <i class="fas fa-flag"></i> Country Specific Web Traffic
+          </button>
+        </div>
+      </div>
+
+      <div class="report-menu">
+        <button class="report-menu-header"><i class="fas fa-building"></i> EA Website</button>
+        <div class="report-menu-items">
+          <button data-report-id="ea-ga"
+                  onclick="reportLoadById('ea-ga', this)">
+            <i class="fas fa-chart-area"></i> Google Analytics
+          </button>
+
+          <button data-report-id="ea-search-analytics"
+                  onclick="reportLoadById('ea-search-analytics', this)">
+            <i class="fas fa-search"></i> Search Analytics
+          </button>
+        </div>
+      </div>
+
+      <button data-report-id="visnet-monitoring"
+              onclick="reportLoadById('visnet-monitoring', this)">
+        <i class="fas fa-desktop"></i> VisNet Monitoring
+      </button>
+
+      <button data-report-id="visnet-modelling"
+              onclick="reportLoadById('visnet-modelling', this)">
+        <i class="fas fa-desktop"></i> VisNet Modelling
+      </button>
+
+      <button data-report-id="training"
+              onclick="reportLoadById('training', this)">
+        <i class="fas fa-chalkboard-teacher"></i> Training
+      </button>
+
+      <button data-report-id="net-zero"
+              onclick="reportLoadById('net-zero', this)">
+        <i class="fas fa-leaf"></i> Net Zero
+      </button>
+
+      <button data-report-id="ampss"
+              onclick="reportLoadById('ampss', this)">
+        <i class="fas fa-network-wired"></i> AMPSS
+      </button>
+
+      <button data-report-id="aim"
+              onclick="reportLoadById('aim', this)">
+        <i class="fas fa-lightbulb"></i> AIM
+      </button>
+
+      <button data-report-id="ultratev"
+              onclick="reportLoadById('ultratev', this)">
+        <i class="fas fa-bolt"></i> UltraTev
+      </button>
+
+      <button data-report-id="oil-forensics"
+              onclick="reportLoadById('oil-forensics', this)">
+        <i class="fas fa-vials"></i> Oil &amp; Forensics
+      </button>
+
+      <div class="report-menu">
+        <button class="report-menu-header"><i class="fas fa-search"></i> SEO</button>
+        <div class="report-menu-items">
+          <button data-report-id="seo-keyword-tracker"
+                  onclick="reportLoadById('seo-keyword-tracker', this)">
+            <i class="fas fa-key"></i> Keyword Position Tracker
+          </button>
+
+          <button data-report-id="seo-domain-authority"
+                  onclick="reportLoadById('seo-domain-authority', this)">
+            <i class="fas fa-sitemap"></i> Domain Authority
+          </button>
+
+          <button data-report-id="seo-page-speed"
+                  onclick="reportLoadById('seo-page-speed', this)">
+            <i class="fas fa-tachometer-alt"></i> Page Speed
+          </button>
+
+          <button data-report-id="seo-health-score"
+                  onclick="reportLoadById('seo-health-score', this)">
+            <i class="fas fa-heartbeat"></i> Health Score
+          </button>
+        </div>
+      </div>
+
+      <button data-report-id="email"
+              onclick="reportLoadById('email', this)">
+        <i class="fas fa-envelope"></i> Email
+      </button>
+
+      <button data-report-id="events"
+              onclick="reportLoadById('events', this)">
+        <i class="fas fa-calendar"></i> Events
+      </button>
+
+      <button data-report-id="pr"
+              onclick="reportLoadById('pr', this)">
+        <i class="fas fa-microphone"></i> PR
+      </button>
+
+      <div class="report-menu">
+        <button class="report-menu-header"><i class="fas fa-bullseye"></i> PPC</button>
+        <div class="report-menu-items">
+          <button data-report-id="ppc-google"
+                  onclick="reportLoadById('ppc-google', this)">
+            <i class="fab fa-google"></i> Google
+          </button>
+
+          <button data-report-id="ppc-bing"
+                  onclick="reportLoadById('ppc-bing', this)">
+            <i class="fab fa-bing"></i> Bing
+          </button>
+
+          <button data-report-id="ppc-campaign-source-conv"
+                  onclick="reportLoadById('ppc-campaign-source-conv', this)">
+            <i class="fas fa-bullseye"></i> Campaign Source/Conversions
+          </button>
+        </div>
+      </div>
+
+      <div class="report-menu">
+        <button class="report-menu-header"><i class="fas fa-share-alt"></i> Social Media</button>
+        <div class="report-menu-items">
+          <button data-report-id="social-organic-linkedin"
+                  onclick="reportLoadById('social-organic-linkedin', this)">
+            <i class="fas fa-leaf"></i> Organic - LinkedIn
+          </button>
+
+          <button data-report-id="social-paid-linkedin"
+                  onclick="reportLoadById('social-paid-linkedin', this)">
+            <i class="fab fa-linkedin"></i> Paid - LinkedIn
+          </button>
+
+          <button data-report-id="social-paid-meta"
+                  onclick="reportLoadById('social-paid-meta', this)">
+            <i class="fab fa-facebook"></i> Paid - Meta
+          </button>
+        </div>
+      </div>
+
+      <div class="report-menu">
+        <button class="report-menu-header"><i class="fas fa-funnel-dollar"></i> Marketing Funnel</button>
+        <div class="report-menu-items">
+          <button data-report-id="funnel-am-fy26"
+                  onclick="reportLoadById('funnel-am-fy26', this)">
+            <i class="fas fa-filter"></i> AM FY26
+          </button>
+
+          <button data-report-id="funnel-visnet-fy26"
+                  onclick="reportLoadById('funnel-visnet-fy26', this)">
+            <i class="fas fa-filter"></i> VisNet FY26
+          </button>
+
+          <button data-report-id="funnel-am-fy25"
+                  onclick="reportLoadById('funnel-am-fy25', this)">
+            <i class="fas fa-filter"></i> AM FY25
+          </button>
+
+          <button data-report-id="funnel-visnet-fy25"
+                  onclick="reportLoadById('funnel-visnet-fy25', this)">
+            <i class="fas fa-filter"></i> VisNet FY25
+          </button>
+        </div>
+
+        <!-- NOTE: These two were inside your Marketing Funnel block in the original code.
+             Keeping them here to match your layout intent. -->
+        <button data-report-id="ai-traffic"
+                onclick="reportLoadById('ai-traffic', this)">
+          <i class="fas fa-microphone"></i> AI Traffic
+        </button>
+
+        <button data-report-id="enlit-banner-campaign"
+                onclick="reportLoadById('enlit-banner-campaign', this)">
+          <i class="fas fa-chart-line"></i> Enlit Banner Campaign
+        </button>
+      </div>
+
+      <div id="feedbackLink" tabindex="0" onclick="window.open('mailto:rameez.majeed@eatechnology.com?subject=Dashboard Feedback')">
+        <i class="fas fa-comment"></i> Give Feedback
+      </div>
+    </div>
+
+    <div class="report-main-content">
+      <div id="loadingIndicator"><i class="fas fa-spinner fa-spin"></i> Loading Report...</div>
+
+      <div id="reportFramesContainer">
+        <iframe id="reportFrame"
+                src="https://lookerstudio.google.com/embed/reporting/9a0a08f9-ba9c-4fd6-865c-86091882f3a5/page/p_pp46nz7h9c/"
+                onload="hideLoading()"
+                onerror="reportShowErrorMessage()"></iframe>
+
+        <iframe id="reportFrame2"
+                style="display:none;"
+                onload="hideLoading()"
+                onerror="reportShowErrorMessage()"></iframe>
+
+        <!-- Floating control buttons -->
+        <button id="leftControlBtn" class="control-toggle-btn">🟢 Control</button>
+        <button id="rightControlBtn" class="control-toggle-btn locked">🔒 Locked</button>
+      </div>
+
+      <div id="reportErrorMessage">
+        Oops! The report could not be loaded. Please check if the report is shared publicly or try again later.
+      </div>
+    </div>
+  </div>
+<!-- =========================
+     Chatbot Widget (LLM-assisted)
+     ========================= -->
+<div id="chatbotFab" title="Ask the dashboard">
+  <i class="fas fa-comment-dots"></i>
+</div>
+
+<div id="chatbotPanel" class="chatbot-hidden" aria-live="polite">
+  <div id="chatbotHeader">
+    <div>
+      <strong>Dashboard Q&amp;A</strong><br>
+      <span style="font-size:12px;opacity:0.85;">
+        Ask “Where is AI Traffic?” or “Open SEO Health Score”
+      </span>
+    </div>
+    <button id="chatbotCloseBtn" title="Close">✕</button>
+  </div>
+
+  <div id="chatbotMessages"></div>
+
+  <div id="chatbotInputRow">
+    <input id="chatbotInput" type="text" placeholder="Try: Open PPC Google report">
+    <button id="chatbotSendBtn">Send</button>
+  </div>
+</div>
+  <script>
+    // =========================
+    // Password gating (unchanged)
+    // =========================
+    async function hashMessage(msg) {
+      const msgUint8 = new TextEncoder().encode(msg);
+      const hashBuffer = await crypto.subtle.digest("SHA-256", msgUint8);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    // 🔒 Replace this with the SHA-256 hash of your real password
+    const validHash = "e3c652f0ba0b4801205814f8b6bc49672c4c74e25b497770bb89b22cdeb4e951";
+
+    async function reportCheckPassword() {
+      const input = document.getElementById('reportPasswordInput').value;
+      const inputHash = await hashMessage(input);
+
+      if (inputHash === validHash) {
+        localStorage.setItem('dashboardAuthTime', Date.now());
+        document.getElementById('reportPasswordOverlay').style.display = 'none';
+
+        // ✅ If user arrives via deep link, load it immediately after login
+        loadFromDeepLink();
+      } else {
+        alert("Incorrect password. Please try again.");
+      }
+    }
+
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      sidebar.classList.toggle('collapsed');
+    }
+
+    // =========================
+    // Deep Linking + Report Catalog
+    // =========================
+    const REPORTS = {
+      // MQLs & Key Insights
+      "mqls-fy26": {
+        title: "MQLs",
+        url: "https://lookerstudio.google.com/embed/reporting/fcceb078-3b7c-46b3-ba4d-355d6efc110c/page/p_8jrq4g21ud"
+      },
+      "mqls-am-fy26": {
+        title: "AM FY 26",
+        url: "https://lookerstudio.google.com/embed/reporting/2b663a8e-07ef-4f74-9f4f-9ea7ea9b1c6b/page/p_k9c9t7qbrd/"
+      },
+      "mqls-visnet-fy26": {
+        title: "VisNet FY 26",
+        url: "https://lookerstudio.google.com/embed/reporting/fcceb078-3b7c-46b3-ba4d-355d6efc110c/page/p_jlgy4fn6md"
+      },
+      "mqls-am-fy25": {
+        title: "AM FY 25",
+        url: "https://lookerstudio.google.com/embed/reporting/2b663a8e-07ef-4f74-9f4f-9ea7ea9b1c6b/page/p_gqqz5fuard"
+      },
+      "mqls-visnet-fy25": {
+        title: "VisNet FY 25",
+        url: "https://lookerstudio.google.com/embed/reporting/fcceb078-3b7c-46b3-ba4d-355d6efc110c/page/p_32xh2ydawd"
+      },
+
+      // Forms
+      "form-submissions": {
+        title: "Form Submissions",
+        url: "https://lookerstudio.google.com/embed/reporting/ebe5c1e4-fff4-48fb-9726-410557212720/page/p_72i2wokhhd/"
+      },
+
+      // VisNet Website
+      "visnet-ga": {
+        title: "Google Analytics",
+        url: "https://lookerstudio.google.com/embed/reporting/ebe5c1e4-fff4-48fb-9726-410557212720/page/p_gadygi8ggd/"
+      },
+      "visnet-search-analytics": {
+        title: "Search Analytics",
+        url: "https://lookerstudio.google.com/embed/reporting/ed48d87a-486f-4500-963f-c1ad286cbe93/page/p_d3fdz3zqgd/"
+      },
+      "visnet-country-traffic": {
+        title: "Country Specific Web Traffic",
+        url: "https://lookerstudio.google.com/embed/reporting/ebe5c1e4-fff4-48fb-9726-410557212720/page/p_uxpmtfpfld/"
+      },
+
+      // EA Website
+      "ea-ga": {
+        title: "Google Analytics",
+        url: "https://lookerstudio.google.com/embed/reporting/2b663a8e-07ef-4f74-9f4f-9ea7ea9b1c6b/page/p_obc9jgnf9c/"
+      },
+      "ea-search-analytics": {
+        title: "Search Analytics",
+        url: "https://lookerstudio.google.com/embed/reporting/2b663a8e-07ef-4f74-9f4f-9ea7ea9b1c6b/page/p_rwg4z6sdcd/"
+      },
+
+      // VisNet Products
+      "visnet-monitoring": {
+        title: "VisNet Monitoring",
+        url: "https://lookerstudio.google.com/embed/reporting/ebe5c1e4-fff4-48fb-9726-410557212720/page/p_rdv1w7wftd/"
+      },
+      "visnet-modelling": {
+        title: "VisNet Modelling",
+        url: "https://lookerstudio.google.com/embed/reporting/ebe5c1e4-fff4-48fb-9726-410557212720/page/p_l8z90wxitd/"
+      },
+
+      // Business Units
+      "training": {
+        title: "Training",
+        url: "https://lookerstudio.google.com/embed/reporting/9a0a08f9-ba9c-4fd6-865c-86091882f3a5/page/p_pp46nz7h9c/"
+      },
+      "net-zero": {
+        title: "Net Zero",
+        url: "https://lookerstudio.google.com/embed/reporting/2b663a8e-07ef-4f74-9f4f-9ea7ea9b1c6b/page/p_r1ojqvr4nd"
+      },
+      "ampss": {
+        title: "AMPSS",
+        url: "https://lookerstudio.google.com/embed/reporting/2b663a8e-07ef-4f74-9f4f-9ea7ea9b1c6b/page/p_ybns6k7srd"
+      },
+      "aim": {
+        title: "AIM",
+        url: "https://lookerstudio.google.com/embed/reporting/2b663a8e-07ef-4f74-9f4f-9ea7ea9b1c6b/page/p_vu3pc48srd"
+      },
+      "ultratev": {
+        title: "UltraTev",
+        url: "https://lookerstudio.google.com/embed/reporting/2b663a8e-07ef-4f74-9f4f-9ea7ea9b1c6b/page/p_atmgkegetd/"
+      },
+      "oil-forensics": {
+        title: "Oil & Forensics",
+        url: "https://lookerstudio.google.com/embed/reporting/2b663a8e-07ef-4f74-9f4f-9ea7ea9b1c6b/page/p_xh8m0z3ctd/"
+      },
+
+      // SEO
+      "seo-keyword-tracker": {
+        title: "Keyword Position Tracker",
+        url: "https://lookerstudio.google.com/embed/reporting/ed48d87a-486f-4500-963f-c1ad286cbe93/page/p_qjlg7ycbad/"
+      },
+      "seo-domain-authority": {
+        title: "Domain Authority",
+        url: "https://lookerstudio.google.com/embed/reporting/ed48d87a-486f-4500-963f-c1ad286cbe93/page/p_1yqzph3vld/"
+      },
+      "seo-page-speed": {
+        title: "Page Speed",
+        url: "https://lookerstudio.google.com/embed/reporting/ebe5c1e4-fff4-48fb-9726-410557212720/page/p_667j3sn4vd"
+      },
+      "seo-health-score": {
+        title: "Health Score",
+        url: "https://lookerstudio.google.com/embed/reporting/ebe5c1e4-fff4-48fb-9726-410557212720/page/p_k7wtaby9vd"
+      },
+
+      // Email / Events / PR
+      "email": {
+        title: "Email",
+        url: "https://lookerstudio.google.com/embed/reporting/78376592-1e70-407c-8e8d-7bf6c085c5cb/page/p_sb1dx8khhd/"
+      },
+      "events": {
+        title: "Events",
+        url: "https://lookerstudio.google.com/embed/reporting/78376592-1e70-407c-8e8d-7bf6c085c5cb/page/p_vbl76okhhd/"
+      },
+      "pr": {
+        title: "PR",
+        url: "https://lookerstudio.google.com/embed/reporting/78376592-1e70-407c-8e8d-7bf6c085c5cb/page/p_81eydpkhhd/"
+      },
+
+      // PPC
+      "ppc-google": {
+        title: "Google",
+        url: "https://lookerstudio.google.com/embed/reporting/86af7bb7-cc68-4801-aa8f-ad64672f6971/page/p_7f2aw8gugd/"
+      },
+      "ppc-bing": {
+        title: "Bing",
+        url: "https://lookerstudio.google.com/embed/reporting/86af7bb7-cc68-4801-aa8f-ad64672f6971/page/p_r3xp7adzqd/"
+      },
+      "ppc-campaign-source-conv": {
+        title: "Campaign Source/Conversions",
+        url: "https://lookerstudio.google.com/embed/reporting/7a8ab4f6-03ea-4f23-817b-5573bf272e87/page/p_htt9lurfld/"
+      },
+
+      // Social
+      "social-organic-linkedin": {
+        title: "Organic - LinkedIn",
+        url: "https://lookerstudio.google.com/embed/reporting/2b663a8e-07ef-4f74-9f4f-9ea7ea9b1c6b/page/p_6wnd69nf9c"
+      },
+      "social-paid-linkedin": {
+        title: "Paid - LinkedIn",
+        url: "https://lookerstudio.google.com/embed/reporting/86af7bb7-cc68-4801-aa8f-ad64672f6971/page/p_6nz7z4i1fd/"
+      },
+      "social-paid-meta": {
+        title: "Paid - Meta",
+        url: "https://lookerstudio.google.com/embed/reporting/86af7bb7-cc68-4801-aa8f-ad64672f6971/page/p_5ma47ri1fd/"
+      },
+
+      // Marketing Funnel
+      "funnel-am-fy26": {
+        title: "AM FY26",
+        url: "https://lookerstudio.google.com/embed/reporting/f406a0d1-eb9f-4716-a181-ea0de09e00cf/page/p_jlgy4fn6md"
+      },
+      "funnel-visnet-fy26": {
+        title: "VisNet FY26",
+        url: "https://lookerstudio.google.com/embed/reporting/50d90de8-38a3-4ea3-bd8f-16a7d5313347/page/p_jlgy4fn6md"
+      },
+      "funnel-am-fy25": {
+        title: "AM FY25",
+        url: "https://lookerstudio.google.com/embed/reporting/91f1d804-484f-4654-9b93-79d68686a4c3/page/p_jlgy4fn6md"
+      },
+      "funnel-visnet-fy25": {
+        title: "VisNet FY25",
+        url: "https://lookerstudio.google.com/embed/reporting/cd828cdc-0d10-4af8-b80c-046bf2db6df3/page/p_jlgy4fn6md"
+      },
+
+      // AI Traffic
+      "ai-traffic": {
+        title: "AI Traffic",
+        url: "https://lookerstudio.google.com/embed/reporting/de1c4d23-9d77-42f2-9f64-f0082b4b1d46/page/CJ6aD"
+      },
+
+      // External: Feathr report
+      "enlit-banner-campaign": {
+        title: "Feathr Report",
+        url: "https://l.feathr.co/v1/reports/c/6926ab6e96f726e6027bba6b?s=2025-11-28&e=2025-12-19&m=l&c=eyJhdHRyaWJ1dGlvbk1vZGVsIjoiZmlyc3RfdG91Y2giLCJpbmNsdWRlQWN0aXZpdHlCcmVha2Rvd24iOnRydWUsImluY2x1ZGVEY3Rpdml0eVN1bW1hcnkiOnRydWUsImluY2x1ZGVBZEFjdGl2aXR5Ijp0cnVlLCJpbmNsdWRlQ29udmVyc2lvbnNUYWJsZSI6ZmFsc2UsImluY2x1ZGVDcmVhdGl2ZXNUYWJsZSI6dHJ1ZSwiaW5jbHVkZURhaWx5U3RhdHNUYWJsZSI6ZmFsc2UsImluY2x1ZGVEbWFpbEFjdGl2aXR5IjpmYWxzZSwiaW5jbHVkZUhlYXRtYXAiOnRydWUsImluY2x1ZGVMZWFkc1N1bW1hcnkiOmZhbHNlLCJpbmNsdWRlRm9ybVN1Ym1pc3Npb25zVGFibGUiOmZhbHNlLCJpbmNsdWRlUGFnZUFjdGl2aXR5IjpmYWxzZSwiaW5jbHVkZVJPSSI6ZmFsc2UsImluY2x1ZGVTcGVuZFBlcmZvcm1hbmNlIjpmYWxzZSwiaW5jbHVkZVRyYWZmaWNCcmVha2Rvd24iOnRydWUsImluY2x1ZGVTb25ldGl6YXRpb25ST0kiOmZhbHNlLCJpbmNsdWRlTGlua0NsaWNrc1RhYmxlIjp0cnVlLCJpbmNsdWRlQ2FtcGFpZ25FbmdhZ2VtZW50IjpmYWxzZX0%3D"
+      }
+    };
+
+    function setDeepLink(reportId, useReplace = false) {
+      if (!reportId) return;
+      const url = new URL(window.location.href);
+      url.searchParams.set("report", reportId);
+
+      if (useReplace) window.history.replaceState({ report: reportId }, "", url.toString());
+      else window.history.pushState({ report: reportId }, "", url.toString());
+    }
+
+    function getDeepLinkReportId() {
+      const url = new URL(window.location.href);
+      return url.searchParams.get("report");
+    }
+
+    function highlightActiveButton(reportId) {
+      if (!reportId) return;
+
+      const buttons = document.querySelectorAll('.report-sidebar button');
+      buttons.forEach(btn => btn.classList.remove('active'));
+
+      const btn = document.querySelector(`.report-sidebar button[data-report-id="${reportId}"]`);
+      if (btn) {
+        btn.classList.add('active');
+
+        // If it's in a submenu, open its parent menu and close others
+        const parentMenu = btn.closest('.report-menu');
+        if (parentMenu) {
+          document.querySelectorAll('.report-menu').forEach(m => {
+            if (m !== parentMenu) m.classList.remove('open');
+          });
+          parentMenu.classList.add('open');
+        }
+      }
+    }
+
+    function loadFromDeepLink() {
+      const reportId = getDeepLinkReportId();
+      if (!reportId) return false;
+
+      const entry = REPORTS[reportId];
+      if (!entry) return false;
+
+      reportLoadReport(entry.url, null, entry.title, reportId);
+      return true;
+    }
+
+    window.addEventListener("popstate", () => {
+      loadFromDeepLink();
+    });
+
+    function reportLoadById(reportId, button) {
+      const entry = REPORTS[reportId];
+      if (!entry) {
+        alert("Report not found: " + reportId);
+        return;
+      }
+      reportLoadReport(entry.url, button || null, entry.title, reportId);
+    }
+
+    // =========================
+    // Loading/error helpers
+    // =========================
+    function hideLoading() {
+      document.getElementById('loadingIndicator').style.display = 'none';
+    }
+
+    function reportShowErrorMessage() {
+      document.getElementById('reportErrorMessage').style.display = 'block';
+    }
+
+    // =========================
+    // Sidebar menu accordion (unchanged)
+    // =========================
+    document.querySelectorAll('.report-menu-header').forEach(header => {
+      header.addEventListener('click', () => {
+        const menu = header.parentElement;
+        const allMenus = document.querySelectorAll('.report-menu');
+        allMenus.forEach(m => {
+          if (m !== menu) m.classList.remove('open');
+        });
+        menu.classList.toggle('open');
+      });
+    });
+
+    // =========================
+    // Search (same behavior as yours, but works with data-report-id too)
+    // =========================
+    document.getElementById('menuSearchInput').addEventListener('input', function () {
+      const searchValue = this.value.toLowerCase();
+      const buttons = document.querySelectorAll('.report-sidebar button');
+
+      buttons.forEach(btn => {
+        const text = btn.textContent.toLowerCase();
+        const parentMenu = btn.closest('.report-menu');
+        const isMatch = text.includes(searchValue);
+
+        btn.style.display = isMatch ? 'flex' : 'none';
+
+        if (parentMenu && parentMenu.classList.contains('report-menu')) {
+          const items = parentMenu.querySelectorAll('.report-menu-items button');
+          const anyVisible = [...items].some(i => i.style.display !== 'none');
+
+          parentMenu.style.display = anyVisible ? 'block' : 'none';
+          parentMenu.classList.toggle('open', anyVisible);
+        }
+      });
+    });
+
+    // =========================
+    // Split Screen Logic
+    // =========================
+    let splitMode = false;
+    let activeFrame = "left";
+
+    const leftBtn = document.getElementById('leftControlBtn');
+    const rightBtn = document.getElementById('rightControlBtn');
+    const compareBtn = document.getElementById('toggleCompareBtn');
+    const resetBtn = document.getElementById('resetSplitBtn');
+
+    compareBtn.addEventListener('click', () => {
+      const container = document.getElementById('reportFramesContainer');
+      const frame2 = document.getElementById('reportFrame2');
+      splitMode = !splitMode;
+
+      if (splitMode) {
+        container.classList.add('split');
+        frame2.style.display = 'block';
+        showControlButtons();
+        resetBtn.style.display = 'inline-block';
+        alert("✅ Split view enabled.\nClick 🔒 Locked to make that side active.");
+      } else {
+        container.classList.remove('split');
+        frame2.style.display = 'none';
+        hideControlButtons();
+        resetBtn.style.display = 'none';
+      }
+    });
+
+    function showControlButtons() {
+      leftBtn.style.display = 'inline-block';
+      rightBtn.style.display = 'inline-block';
+      updateControlButtons();
+    }
+    function hideControlButtons() {
+      leftBtn.style.display = 'none';
+      rightBtn.style.display = 'none';
+    }
+
+    function updateControlButtons() {
+      if (activeFrame === "left") {
+        leftBtn.innerText = "🟢 Control";
+        leftBtn.classList.remove("locked");
+        rightBtn.innerText = "🔒 Locked";
+        rightBtn.classList.add("locked");
+      } else {
+        rightBtn.innerText = "🟢 Control";
+        rightBtn.classList.remove("locked");
+        leftBtn.innerText = "🔒 Locked";
+        leftBtn.classList.add("locked");
+      }
+    }
+
+    leftBtn.addEventListener('click', () => {
+      activeFrame = "left";
+      updateControlButtons();
+    });
+    rightBtn.addEventListener('click', () => {
+      activeFrame = "right";
+      updateControlButtons();
+    });
+
+    // === Reset Split View (keeps the active report)
+    resetBtn.addEventListener('click', () => {
+      const iframe1 = document.getElementById('reportFrame');
+      const iframe2 = document.getElementById('reportFrame2');
+      const container = document.getElementById('reportFramesContainer');
+
+      let currentReportUrl = activeFrame === "left" ? iframe1.src : iframe2.src;
+
+      iframe1.src = currentReportUrl;
+      iframe2.style.display = "none";
+      container.classList.remove("split");
+
+      leftBtn.style.display = "none";
+      rightBtn.style.display = "none";
+      resetBtn.style.display = "none";
+      splitMode = false;
+      activeFrame = "left";
+
+      alert("✅ Returned to single view (kept the active report).");
+    });
+
+    // =========================
+    // Unified report loader (split-aware) + deep link update
+    // =========================
+    function reportLoadReport(reportUrl, button, title, reportId) {
+      const iframe1 = document.getElementById('reportFrame');
+      const iframe2 = document.getElementById('reportFrame2');
+      const errorMessage = document.getElementById('reportErrorMessage');
+      const buttons = document.querySelectorAll('.report-sidebar button');
+
+      document.getElementById('loadingIndicator').style.display = 'block';
+      errorMessage.style.display = 'none';
+
+      if (splitMode) {
+        if (activeFrame === "left") iframe1.src = reportUrl;
+        else iframe2.src = reportUrl;
+      } else {
+        iframe1.src = reportUrl;
+      }
+
+      // Active styling
+      if (button) {
+        buttons.forEach(btn => btn.classList.remove('active'));
+        button.classList.add('active');
+      } else if (reportId) {
+        highlightActiveButton(reportId);
+      }
+
+      if (title) document.title = title;
+
+      // ✅ Update URL
+      if (reportId) setDeepLink(reportId);
+    }
+
+    // =========================
+    // Accessibility for feedback link
+    // =========================
+    document.getElementById('feedbackLink').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') this.click();
+    });
+
+    // =========================
+    // Auth + default deep link logic
+    // =========================
+    window.addEventListener('DOMContentLoaded', () => {
+      const lastAuthTime = localStorage.getItem('dashboardAuthTime');
+      const now = new Date().getTime();
+      const sixtyMinutes = 60 * 60 * 1000;
+
+      if (lastAuthTime && (now - parseInt(lastAuthTime) < sixtyMinutes)) {
+        document.getElementById('reportPasswordOverlay').style.display = 'none';
+      }
+
+      // ✅ Load deep link if present
+      const loaded = loadFromDeepLink();
+
+      // ✅ If no deep link, set default report param (without adding history entry)
+      if (!loaded) {
+        const defaultReportId = "training";
+        setDeepLink(defaultReportId, true);
+        highlightActiveButton(defaultReportId);
+      }
+    });
+
+    // =========================
+    // What's New Popup logic (unchanged, but uses deep link loader)
+    // =========================
+    document.addEventListener('DOMContentLoaded', () => {
+      const showUpdatesBtn = document.getElementById('showUpdatesBtn');
+      const updatesOverlay = document.getElementById('updatesOverlay');
+      const closeUpdatesBtn = document.getElementById('closeUpdatesBtn');
+
+      function showUpdates() {
+        updatesOverlay.style.display = 'flex';
+        localStorage.setItem('lastUpdatePopupShown', new Date().toDateString());
+      }
+
+      function hideUpdates() {
+        updatesOverlay.style.display = 'none';
+      }
+
+      if (showUpdatesBtn) showUpdatesBtn.addEventListener('click', showUpdates);
+      if (closeUpdatesBtn) closeUpdatesBtn.addEventListener('click', hideUpdates);
+      if (updatesOverlay) {
+        updatesOverlay.addEventListener('click', (e) => {
+          if (e.target === updatesOverlay) hideUpdates();
+        });
+      }
+
+      const lastShown = localStorage.getItem('lastUpdatePopupShown');
+      const today = new Date().toDateString();
+
+      const checkLoginInterval = setInterval(() => {
+        const passwordOverlay = document.getElementById('reportPasswordOverlay');
+        if (passwordOverlay && passwordOverlay.style.display === 'none') {
+          clearInterval(checkLoginInterval);
+          if (lastShown !== today) {
+            setTimeout(showUpdates, 800);
+          }
+        }
+      }, 500);
+    });
+	  
+	  // =========================
+// Chatbot (LLM-assisted) - Frontend
+// =========================
+
+// IMPORTANT:
+// Your dashboard cannot read data/numbers inside the Looker Studio iframes (cross-origin).
+// This chatbot is designed to help users find/open reports and answer "how do I" questions.
+
+const CHAT_API_URL = "http://127.0.0.1:3000/api/dashboard-chat"; 
+// If your backend is on another domain, replace with full URL like:
+// const CHAT_API_URL = "https://your-backend-domain.com/api/dashboard-chat";
+
+const chatbotFab = document.getElementById("chatbotFab");
+const chatbotPanel = document.getElementById("chatbotPanel");
+const chatbotCloseBtn = document.getElementById("chatbotCloseBtn");
+const chatbotMessages = document.getElementById("chatbotMessages");
+const chatbotInput = document.getElementById("chatbotInput");
+const chatbotSendBtn = document.getElementById("chatbotSendBtn");
+
+function chatAddMsg(role, text) {
+  const wrap = document.createElement("div");
+  wrap.className = `chat-msg ${role}`;
+  const bubble = document.createElement("div");
+  bubble.className = "chat-bubble";
+  bubble.textContent = text;
+  wrap.appendChild(bubble);
+  chatbotMessages.appendChild(wrap);
+  chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+}
+
+function chatOpen() {
+  chatbotPanel.classList.remove("chatbot-hidden");
+  chatbotInput.focus();
+
+  if (chatbotMessages.childElementCount === 0) {
+    chatAddMsg("bot", "Hi! Ask me where a report is, e.g.\n- Open AI Traffic\n- Where is SEO Health Score?\n- Show PPC Google\n\nI can also explain Compare mode.");
+  }
+}
+function chatClose() {
+  chatbotPanel.classList.add("chatbot-hidden");
+}
+
+chatbotFab.addEventListener("click", chatOpen);
+chatbotCloseBtn.addEventListener("click", chatClose);
+
+async function chatSend() {
+  const q = (chatbotInput.value || "").trim();
+  if (!q) return;
+
+  chatAddMsg("user", q);
+  chatbotInput.value = "";
+
+  // show temporary "thinking" message
+  chatAddMsg("bot", "Thinking...");
+
+  try {
+    // Send the report list to the server (so the LLM knows what reports exist)
+    const res = await fetch(CHAT_API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        question: q,
+        reports: REPORTS, // you already have REPORTS ✅
+        // optional extra context:
+        splitMode: splitMode,
+        activeFrame: activeFrame
+      })
+    });
+
+    if (!res.ok) throw new Error("Server returned " + res.status);
+
+    const data = await res.json();
+
+    // Remove the "Thinking..." bubble (last bot msg)
+    chatbotMessages.removeChild(chatbotMessages.lastChild);
+
+    if (data.reply) chatAddMsg("bot", data.reply);
+
+    // If LLM says "navigate", load the report
+    if (data.intent === "navigate" && data.reportId) {
+      // This uses your existing function ✅
+      reportLoadById(data.reportId, null);
+    }
+
+  } catch (err) {
+    chatbotMessages.removeChild(chatbotMessages.lastChild);
+    chatAddMsg("bot", "Sorry—chat service is unavailable right now.");
+    console.error(err);
+  }
+}
+
+chatbotSendBtn.addEventListener("click", chatSend);
+chatbotInput.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") chatSend();
+});
+
+	  
+  </script>
+
+  <!-- === What's New Popup === -->
+  <div id="updatesOverlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:9998; justify-content:center; align-items:center;">
+    <div style="background:white; color:#220639; width:90%; max-width:600px; padding:22px; border-radius:10px; position:relative; text-align:left;">
+
+      <h2 style="margin-top:0; margin-bottom:4px; color:#220639; font-size:18px; display:flex; align-items:center; gap:8px;">
+        🔎 Long-Form Search Queries (AI-Assisted Searches)
+        <span style="
+          background:#FAB724;
+          color:#220639;
+          font-size:11px;
+          font-weight:800;
+          padding:3px 7px;
+          border-radius:12px;
+          letter-spacing:0.5px;
+        ">NEW</span>
+      </h2>
+
+      <div style="font-size:15px; font-weight:700; color:#00AAE4; margin-bottom:10px;">
+        19 January 2026
+      </div>
+
+      <p style="font-size:14.5px; line-height:1.6;">
+        Displays long-form Google search queries (7+ words), which are typically conversational and often
+        associated with AI or LLM-assisted searches. Useful for identifying AI-driven discovery and long-tail intent.
+      </p>
+
+      <p style="font-size:14.5px; line-height:1.6; margin-top:10px;">
+        <a href="#"
+           onclick="reportLoadById('ai-traffic', null); document.getElementById('updatesOverlay').style.display='none'; return false;"
+           style="color:#00AAE4; font-weight:700; text-decoration:underline;">
+          View this in the AI Traffic report →
+        </a>
+      </p>
+
+      <h2 style="margin-top:26px; margin-bottom:4px; color:#220639; font-size:18px;">
+        🤖 AI Traffic Updates
+      </h2>
+
+      <div style="font-size:15px; font-weight:700; color:#00AAE4; margin-bottom:10px;">
+        5 December 2025
+      </div>
+
+      <p style="font-size:14.5px; line-height:1.6;">
+        The dashboard now includes a dedicated <strong>AI Traffic</strong> report covering:
+      </p>
+
+      <ul style="font-size:14.5px; line-height:1.6; margin-top:5px; padding-left:18px;">
+        <li><strong>eatechnology.com</strong></li>
+        <li><strong>visnet.tech</strong></li>
+        <li><strong>training.eatechnology.com</strong></li>
+      </ul>
+
+      <button id="closeUpdatesBtn"
+        style="background:#220639; color:white; border:none; padding:8px 16px; border-radius:6px; cursor:pointer; font-weight:700; margin-top:14px;">
+        Close
+      </button>
+    </div>
+  </div>
+</body>
+</html>
