@@ -1,716 +1,1707 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Marketing Performance Metrics</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Marketing Intelligence Portal</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;800&display=swap');
 
-    body.report-body {
-      font-family: 'Roboto', Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
-      box-sizing: border-box;
+    :root{
+      --bg:#f4f6fb;
+      --panel:#ffffff;
+      --panel-2:#f8f9fd;
+      --panel-3:#eef2fb;
+      --brand:#220639;
+      --brand-2:#131633;
+      --brand-3:#37204f;
+      --accent:#00AAE4;
+      --text:#1f2340;
+      --muted:#707895;
+      --success:#00a36c;
+      --warning:#f5a623;
+      --danger:#e04f5f;
+      --shadow:0 8px 24px rgba(18, 24, 51, 0.10);
+      --shadow-soft:0 4px 14px rgba(18, 24, 51, 0.08);
+      --radius:14px;
+      --radius-sm:10px;
+      --header-h:72px;
+      --sidebar-w:310px;
+      --meta-w:340px;
+      --transition:240ms ease;
     }
-    .report-header {
-      display: flex;
-      align-items: center;
-      background-color: #220639;
-      padding: 10px 20px;
-      color: white;
-      flex-shrink: 0;
-      width: 100%;
-      box-sizing: border-box;
-    }
-    .report-header img.report-logo {
-      height: 50px;
-      width: auto;
-      margin-right: 15px;
-    }
-    .report-header h1 {
-      font-size: 28px;
-      margin: 0;
-      flex-grow: 1;
-      text-align: center;
-    }
-    .toggle-sidebar-btn {
-      background: none;
-      border: none;
-      color: white;
-      font-size: 20px;
-      cursor: pointer;
-      margin-right: 10px;
-    }
-    .report-content-container {
-      display: flex;
-      flex: 1;
-      overflow: hidden;
-    }
-    .report-sidebar {
-      width: 250px;
-      background-color: #220639;
-      color: white;
-      display: flex;
-      flex-direction: column;
-      padding: 10px;
-      box-sizing: border-box;
-      flex-shrink: 0;
-      overflow-y: auto;
-      max-height: 100vh;
-      transition: width 0.3s ease;
-    }
-    .report-sidebar.collapsed {
-      width: 0;
-      padding: 0;
-      overflow: hidden;
-    }
-    .report-sidebar h2 {
-      color: white;
-      font-weight: 700;
-      margin-bottom: 10px;
-      text-align: center;
-      font-size: 14px;
-    }
-    .report-sidebar button {
-      background-color: #00AAE4;
-      color: #220639;
-      border: none;
-      padding: 5px;
-      cursor: pointer;
-      border-radius: 5px;
-      margin-bottom: 5px;
-      font-weight: 700;
-      text-align: left;
-      width: 100%;
-      box-sizing: border-box;
-      display: flex;
-      align-items: center;
-      position: relative;
-    }
-    .report-sidebar button i {
-      margin-right: 8px;
-    }
-    .report-sidebar button[title]:hover::after {
-      content: attr(title);
-      position: absolute;
-      left: 105%;
-      background: #333;
-      color: #fff;
-      padding: 5px 8px;
-      border-radius: 4px;
-      white-space: nowrap;
-    }
-    .report-sidebar button:hover, .report-sidebar button.active {
-      background-color: #131633;
-      color: white;
-    }
-    .report-main-content {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      position: relative;
-      overflow: hidden;
-    }
-    #reportFrame {
-      display: block;
-      width: 100%;
-      height: 100%;
-      border: none;
-    }
-    #loadingIndicator {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      font-size: 20px;
-      color: #00AAE4;
-      display: none;
-    }
-    #reportErrorMessage {
-      display: none;
-      text-align: center;
-      margin-top: 20px;
-      font-size: 18px;
-      color: red;
-    }
-    #reportPasswordOverlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0, 0, 0, 0.9);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      flex-direction: column;
-      z-index: 9999;
-    }
-    #reportPasswordOverlay input {
-      padding: 10px;
-      font-size: 16px;
-      margin-bottom: 10px;
-      width: 200px;
-      border-radius: 5px;
-      border: none;
-    }
-    #reportPasswordOverlay button {
-      padding: 10px 20px;
-      font-size: 16px;
-      background-color: #00AAE4;
-      color: #220639;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    .report-menu-header {
-      background-color: #00AAE4;
-      color: #1b1e3d;
-      border: none;
-      padding: 10px 15px;
-      cursor: pointer;
-      border-radius: 5px;
-      margin-bottom: 5px;
-      font-weight: 700;
-      text-align: left;
-    }
-    .report-menu-header:hover {
-      background-color: #131633;
-      color: white;
-    }
-    .report-menu-items {
-      display: none;
-      margin-left: 15px;
-    }
-    .report-menu-items button {
-      background-color: #131633;
-      color: white;
-      border: none;
-      padding: 8px 15px;
-      cursor: pointer;
-      border-radius: 5px;
-      margin-bottom: 5px;
-      font-weight: 700;
-      text-align: left;
-    }
-    .report-menu-items button:hover {
-      background-color: #00AAE4;
-      color: #1b1e3d;
-    }
-    .report-menu.open .report-menu-items {
-      display: flex;
-      flex-direction: column;
-    }
-    .report-sidebar button.active {
-      border: 2px solid #00AAE4;
-      border-radius: 5px;
-      box-shadow: 0 0 10px rgba(250, 183, 36, 0.7);
-    }
-    .report-menu.open > .report-menu-header {
-      border: 2px solid #00AAE4;
-      border-radius: 5px;
-      box-shadow: 0 0 10px rgba(250, 183, 36, 0.7);
-    }
-    .report-sidebar button:hover, .report-menu-header:hover {
-      border: 2px solid #131633;
-      box-shadow: 0 0 10px rgba(19, 22, 51, 0.7);
-    }
-    @media (max-width: 768px) {
-      .report-sidebar {
-        position: absolute;
-        z-index: 10;
-        height: 100%;
-        background: #220639;
-      }
-    }
-    #feedbackLink {
-      text-align: center;
-      margin-top: 20px;
-      color: #00AAE4;
-      cursor: pointer;
-    }
-
-    /* === Split-Screen Layout === */
-    #reportFramesContainer {
-      display: flex;
-      width: 100%;
-      height: 100%;
-    }
-    #reportFramesContainer.split {
-      display: flex;
-      flex-direction: row;
-    }
-    #reportFramesContainer iframe {
-      width: 100%;
-      height: 100%;
-      border: none;
-      transition: width 0.3s ease;
-    }
-    #reportFramesContainer.split iframe {
-      width: 50%;
-      border-left: 2px solid #220639;
-    }
-
-    /* === Floating Control Buttons === */
-    .control-toggle-btn {
-      position: absolute;
-      top: 15px;
-      padding: 6px 10px;
-      font-size: 13px;
-      font-weight: bold;
-      border-radius: 6px;
-      border: none;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      z-index: 100;
-      display: none;
-    }
-    #leftControlBtn { left: 15px; background-color: #00AAE4; color: #220639; }
-    #rightControlBtn { right: 15px; background-color: #131633; color: white; }
-
-    .control-toggle-btn.locked {
-      opacity: 0.6;
-      background-color: #444;
-      color: #ccc;
-      cursor: pointer;
-    }
-    .control-toggle-btn:hover {
-      transform: scale(1.05);
-    }
-    @keyframes pulse {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.1); }
-      100% { transform: scale(1); }
-    }
-    .control-toggle-btn:not(.locked) {
-      animation: pulse 2s infinite;
-    }
-	  /* =========================
-   Chatbot Widget (LLM-assisted)
-   ========================= */
-#chatbotFab {
-  position: fixed;
-  right: 18px;
-  bottom: 18px;
-  width: 52px;
-  height: 52px;
-  border-radius: 50%;
-  background: #00AAE4;
-  color: #220639;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-  z-index: 9999; /* above overlays */
-  box-shadow: 0 8px 22px rgba(0,0,0,0.35);
-  font-size: 22px;
-}
-#chatbotFab:hover { transform: scale(1.05); }
-
-#chatbotPanel {
-  position: fixed;
-  right: 18px;
-  bottom: 80px;
-  width: 360px;
-  max-width: calc(100vw - 36px);
-  height: 520px;
-  max-height: calc(100vh - 120px);
-  background: #fff;
-  border-radius: 12px;
-  z-index: 9999;
-  box-shadow: 0 12px 30px rgba(0,0,0,0.35);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  border: 1px solid rgba(0,0,0,0.1);
+/* Hidden by default */
+#showSidebarBtn,
+#showMetaBtn{
+  display:none;
+  position:fixed;
+  top:50%;
+  transform:translateY(-50%);
+  height:138px;
+  width:34px;
+  border:none;
+  cursor:pointer;
+  z-index:120;
+  font-weight:800;
+  transition:all var(--transition);
 }
 
-.chatbot-hidden { display: none !important; }
-
-#chatbotHeader {
-  background: #220639;
-  color: white;
-  padding: 12px 12px;
-  display: flex;
-  justify-content: space-between;
-  gap: 10px;
-  align-items: center;
-}
-#chatbotCloseBtn {
-  background: transparent;
-  border: none;
-  color: white;
-  font-size: 18px;
-  cursor: pointer;
+/* Show Menu button */
+#showSidebarBtn{
+  left:0;
+  border-radius:0 16px 16px 0;
+  background:linear-gradient(180deg, #5f3a7e, #2d1343);
+  color:#fff;
+  box-shadow:0 10px 28px rgba(15,20,38,.22);
+  border:1px solid rgba(255,255,255,.12);
 }
 
-#chatbotMessages {
-  padding: 12px;
-  flex: 1;
-  overflow-y: auto;
-  background: #fafafa;
+#showSidebarBtn:hover{
+  background:linear-gradient(180deg, #735193, #381854);
 }
 
-.chat-msg { margin: 10px 0; line-height: 1.4; font-size: 14px; }
-.chat-msg.user { text-align: right; }
-
-.chat-bubble {
-  display: inline-block;
-  padding: 10px 12px;
-  border-radius: 12px;
-  max-width: 85%;
-  white-space: pre-wrap;
+/* Show Details button */
+#showMetaBtn{
+  right:0;
+  border-radius:16px 0 0 16px;
+  background:linear-gradient(180deg, #eef4ff, #dde9fb);
+  color:var(--brand);
+  box-shadow:0 10px 28px rgba(15,20,38,.16);
+  border:1px solid #d7e3f6;
 }
 
-.chat-msg.user .chat-bubble { background: #00AAE4; color: #220639; }
-.chat-msg.bot  .chat-bubble { background: #220639; color: white; }
+#showMetaBtn:hover{
+  background:linear-gradient(180deg, #f6f9ff, #e7efff);
+}
 
-#chatbotInputRow {
-  display: flex;
-  gap: 8px;
-  padding: 10px;
-  border-top: 1px solid rgba(0,0,0,0.08);
+/* Vertical text style */
+#showSidebarBtn .handle-text,
+#showMetaBtn .handle-text{
+  writing-mode:vertical-rl;
+  transform:rotate(180deg);
+  font-size:11px;
+  letter-spacing:.6px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  text-transform:uppercase;
 }
-#chatbotInput {
-  flex: 1;
-  padding: 10px;
-  border-radius: 10px;
-  border: 1px solid rgba(0,0,0,0.2);
-}
-#chatbotSendBtn {
-  padding: 10px 12px;
-  border-radius: 10px;
-  border: none;
-  background: #131633;
-  color: white;
-  cursor: pointer;
-}
-#chatbotSendBtn:hover { opacity: 0.9; }
 
+/* Visibility switching */
+body.sidebar-collapsed #showSidebarBtn{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+body:not(.sidebar-collapsed) #showSidebarBtn{
+  display:none;
+}
+
+body.meta-collapsed #showMetaBtn{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+body:not(.meta-collapsed) #showMetaBtn{
+  display:none;
+}
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:'Roboto', Arial, sans-serif;
+      background:var(--bg);
+      color:var(--text);
+      overflow:hidden;
+    }
+
+    body.sidebar-collapsed .sidebar{
+  width:0;
+  padding:0;
+  overflow:hidden;
+  border:none;
+}
+
+body.meta-collapsed .right-panel{
+  width:0;
+  overflow:hidden;
+  border-left:none;
+}
+
+    .app{
+      display:flex;
+      flex-direction:column;
+      height:100vh;
+    }
+
+    .header{
+      height:var(--header-h);
+      background:linear-gradient(135deg, var(--brand), #2c0b49);
+      color:#fff;
+      display:flex;
+      align-items:center;
+      gap:12px;
+      padding:12px 16px;
+      box-shadow:var(--shadow-soft);
+      z-index:40;
+      flex-shrink:0;
+    }
+
+    .header-left,.header-right{
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+
+    .header-center{
+      flex:1;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:14px;
+      min-width:0;
+    }
+
+    .logo{
+      height:42px;
+      width:auto;
+      flex-shrink:0;
+    }
+
+    .title-wrap{
+      min-width:0;
+    }
+
+    .page-title{
+      margin:0;
+      font-size:22px;
+      font-weight:800;
+      letter-spacing:.2px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .page-subtitle{
+      margin:2px 0 0;
+      font-size:12px;
+      opacity:.85;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .icon-btn, .primary-btn, .secondary-btn, .ghost-btn, .danger-btn{
+      border:none;
+      border-radius:12px;
+      height:42px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      padding:0 14px;
+      font-weight:700;
+      cursor:pointer;
+      transition:transform var(--transition), background var(--transition), box-shadow var(--transition), opacity var(--transition);
+      box-shadow:none;
+      white-space:nowrap;
+    }
+
+    .icon-btn{
+      width:42px;
+      padding:0;
+      background:rgba(255,255,255,.12);
+      color:#fff;
+    }
+    .icon-btn:hover{background:rgba(255,255,255,.18); transform:translateY(-1px)}
+    .primary-btn{
+      background:var(--accent);
+      color:var(--brand);
+    }
+    .primary-btn:hover{filter:brightness(1.03); transform:translateY(-1px)}
+    .secondary-btn{
+      background:#fff;
+      color:var(--brand);
+    }
+    .secondary-btn:hover{background:#f4f6fc; transform:translateY(-1px)}
+    .ghost-btn{
+      background:rgba(255,255,255,.12);
+      color:#fff;
+    }
+    .ghost-btn:hover{background:rgba(255,255,255,.18); transform:translateY(-1px)}
+    .danger-btn{
+      background:#4b4f68;
+      color:#fff;
+    }
+    .danger-btn:hover{background:#3e4258; transform:translateY(-1px)}
+
+    .layout{
+      display:flex;
+      flex:1;
+      min-height:0;
+      overflow:hidden;
+      position:relative;
+    }
+
+   .sidebar{
+  width:var(--sidebar-w);
+  background:linear-gradient(180deg, var(--brand), var(--brand-2));
+  color:#fff;
+  padding:16px;
+  overflow:auto;
+  flex-shrink:0;
+  transition:width var(--transition), padding var(--transition), transform var(--transition);
+  box-shadow:var(--shadow-soft);
+  z-index:20;
+  position:relative;
+}
+
+.sidebar-hide-handle{
+  position:fixed;
+  top:50%;
+  left:calc(var(--sidebar-w) - 2px);
+  transform:translateY(-50%);
+  height:138px;
+  width:34px;
+  border:none;
+  border-radius:0 16px 16px 0;
+  background:linear-gradient(180deg, #5f3a7e, #2d1343);
+  color:#fff;
+  cursor:pointer;
+  z-index:120;
+  box-shadow:0 10px 28px rgba(15,20,38,.22);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:800;
+  transition:all var(--transition);
+  border:1px solid rgba(255,255,255,.12);
+}
+
+.sidebar-hide-handle:hover{
+  background:linear-gradient(180deg, #735193, #381854);
+}
+
+.sidebar-hide-handle .handle-text{
+  writing-mode:vertical-rl;
+  transform:rotate(180deg);
+  font-size:11px;
+  letter-spacing:.6px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  text-transform:uppercase;
+}
+
+body.sidebar-collapsed .sidebar-hide-handle{
+  display:none;
+}
+
+    .sidebar-section{
+      margin-bottom:18px;
+    }
+
+    .sidebar h2{
+      margin:0 0 10px;
+      font-size:13px;
+      font-weight:800;
+      text-transform:uppercase;
+      letter-spacing:.8px;
+      color:#d7ddff;
+    }
+
+    .search-wrap{
+      position:relative;
+      margin-bottom:14px;
+    }
+    .search-wrap input{
+      width:100%;
+      border:none;
+      outline:none;
+      height:42px;
+      border-radius:12px;
+      padding:0 14px 0 40px;
+      background:rgba(255,255,255,.12);
+      color:#fff;
+      font-size:14px;
+    }
+    .search-wrap input::placeholder{color:rgba(255,255,255,.7)}
+    .search-wrap i{
+      position:absolute;
+      left:14px;
+      top:50%;
+      transform:translateY(-50%);
+      color:#c8d1ff;
+      font-size:14px;
+    }
+    /* Main menu */
+.menu-group{
+  margin-bottom:14px;
+  border-radius:18px;
+  overflow:hidden;
+  background:linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.05));
+  border:1px solid rgba(255,255,255,.10);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.05),
+    0 8px 18px rgba(0,0,0,.08);
+}
+
+.menu-header{
+  width:100%;
+  border:none;
+  background:linear-gradient(180deg, rgba(255,255,255,.16), rgba(255,255,255,.07));
+  color:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  padding:16px 16px;
+  font-weight:800;
+  font-size:15px;
+  cursor:pointer;
+  transition:background var(--transition), transform var(--transition);
+  border-left:4px solid transparent;
+}
+
+.menu-header:hover{
+  background:linear-gradient(180deg, rgba(255,255,255,.20), rgba(255,255,255,.09));
+  border-left-color:var(--accent);
+}
+
+.menu-group.open .menu-header{
+  background:linear-gradient(180deg, rgba(255,255,255,.22), rgba(255,255,255,.10));
+  border-left-color:var(--accent);
+}
+
+.menu-title{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  min-width:0;
+}
+
+.menu-title span{
+  color:#ffffff;
+  font-weight:800;
+  letter-spacing:.1px;
+}
+
+.menu-items{
+  display:none;
+  padding:12px;
+  background:linear-gradient(180deg, rgba(7,10,28,.20), rgba(7,10,28,.10));
+  border-top:1px solid rgba(255,255,255,.06);
+}
+
+.menu-group.open .menu-items{
+  display:block;
+  animation:fadeIn .25s ease;
+}
+
+/* Submenu items - clearly different from main menu */
+.report-btn{
+  width:100%;
+  border:none;
+  background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+  color:#eef3ff;
+  border-radius:16px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  padding:13px 14px;
+  margin-top:10px;
+  cursor:pointer;
+  transition:background var(--transition), transform var(--transition), border var(--transition), box-shadow var(--transition);
+  border:1px solid rgba(255,255,255,.06);
+  position:relative;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.03),
+    inset 0 0 0 1px rgba(0,0,0,.04);
+}
+
+.report-btn:hover{
+  background:linear-gradient(180deg, rgba(255,255,255,.11), rgba(255,255,255,.06));
+  transform:translateY(-1px);
+}
+
+.report-btn.active{
+  background:#ffffff;
+  color:var(--brand);
+  border-color:var(--accent);
+  box-shadow:
+    0 0 0 3px rgba(0,170,228,.15),
+    0 8px 20px rgba(0,170,228,.10);
+}
+
+.report-btn-left{
+  display:flex;
+  align-items:center;
+  gap:11px;
+  min-width:0;
+  text-align:left;
+  flex:1;
+}
+
+.report-btn-left i{
+  opacity:.95;
+  font-size:14px;
+}
+
+.report-btn-left span{
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  font-weight:700;
+  font-size:14px;
+  color:inherit;
+}
+
+.report-btn-meta{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  flex-wrap:wrap;
+  justify-content:flex-end;
+}
+    .badge{
+      font-size:10px;
+      font-weight:800;
+      padding:4px 7px;
+      border-radius:999px;
+      letter-spacing:.4px;
+      display:inline-flex;
+      align-items:center;
+      gap:5px;
+      line-height:1;
+      white-space:nowrap;
+    }
+    .badge.new{background:#eaf7ff;color:#027bb6}
+    .badge.updated{background:#eefbea;color:#187c4f}
+    .badge.beta{background:#fff4de;color:#9e6900}
+    .badge.public{background:#eef8f2;color:#19734a}
+    .badge.internal{background:#f1edfb;color:#5b3ea8}
+    .badge.dynamics{background:#fff3f2;color:#b65244}
+    .badge.external{background:#edf6ff;color:#226ab6}
+    .badge.stale{background:#fff3df;color:#9a6700}
+    .badge.issue{background:#ffe9ec;color:#af3147}
+
+    .main{
+      flex:1;
+      min-width:0;
+      display:flex;
+      flex-direction:column;
+      overflow:hidden;
+      position:relative;
+    }
+
+    .toolbar{
+      background:var(--panel);
+      border-bottom:1px solid #e8ebf5;
+      padding:12px 16px;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+      z-index:10;
+      box-shadow:0 1px 0 rgba(18,24,51,.03);
+    }
+
+    .toolbar-left,.toolbar-right{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    .toolbar-left{flex:1}
+
+    .toolbar-pill{
+      background:var(--panel-2);
+      border:1px solid #e5eaf6;
+      color:var(--text);
+      border-radius:12px;
+      height:40px;
+      padding:0 12px;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      font-size:13px;
+      font-weight:700;
+    }
+
+    .content{
+      flex:1;
+      min-height:0;
+      display:flex;
+      overflow:hidden;
+      position:relative;
+    }
+
+    .viewport{
+      flex:1;
+      min-width:0;
+      min-height:0;
+      position:relative;
+      padding:16px;
+      overflow:hidden;
+    }
+
+    .home-screen, .report-screen{
+      position:absolute;
+      inset:16px;
+      border-radius:18px;
+      overflow:hidden;
+      background:var(--panel);
+      box-shadow:var(--shadow-soft);
+    }
+
+    .home-screen{
+      overflow:auto;
+      padding:20px;
+      display:block;
+    }
+
+    .report-screen{
+      display:none;
+      flex-direction:column;
+    }
+    .report-screen.visible{
+      display:flex;
+    }
+
+    .home-hero{
+      background:linear-gradient(135deg, #f7fbff, #f7f1ff);
+      border:1px solid #e8ebf5;
+      border-radius:18px;
+      padding:18px;
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:18px;
+      margin-bottom:18px;
+      flex-wrap:wrap;
+    }
+
+    .home-hero h3{
+      margin:0 0 6px;
+      font-size:24px;
+      color:var(--brand);
+    }
+    .home-hero p{
+      margin:0;
+      color:var(--muted);
+      line-height:1.6;
+      max-width:760px;
+    }
+
+    .grid{
+      display:grid;
+      gap:16px;
+    }
+    .grid.cols-4{grid-template-columns:repeat(4,minmax(0,1fr))}
+    .grid.cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+    .grid.cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+
+    .card{
+      background:var(--panel);
+      border:1px solid #e7ebf5;
+      border-radius:16px;
+      box-shadow:var(--shadow-soft);
+      padding:16px;
+      min-width:0;
+    }
+    .card h4{
+      margin:0 0 12px;
+      font-size:15px;
+      color:var(--brand);
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+
+    .stat-card{
+      background:linear-gradient(180deg, #fff, #fbfcff);
+      min-height:110px;
+    }
+    .stat-value{
+      font-size:28px;
+      font-weight:800;
+      color:var(--brand);
+      margin:6px 0;
+    }
+    .stat-label{
+      font-size:13px;
+      color:var(--muted);
+    }
+    .mini-note{
+      margin-top:8px;
+      font-size:12px;
+      color:#70809c;
+    }
+
+    .list{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .list-item{
+      border:1px solid #e8ebf5;
+      background:var(--panel-2);
+      border-radius:14px;
+      padding:12px 14px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      transition:transform var(--transition), box-shadow var(--transition), background var(--transition);
+    }
+    .list-item:hover{
+      transform:translateY(-1px);
+      background:#fff;
+      box-shadow:var(--shadow-soft);
+    }
+
+    .list-item-left{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      min-width:0;
+      flex:1;
+    }
+
+    .list-item-title{
+      font-weight:800;
+      color:var(--text);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .list-item-sub{
+      font-size:12px;
+      color:var(--muted);
+      margin-top:3px;
+    }
+
+    .kpi-note{
+      font-size:12px;
+      color:var(--muted);
+      margin-top:6px;
+    }
+
+    .split-actions{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .frames-wrap{
+      position:relative;
+      flex:1;
+      min-height:0;
+      display:flex;
+      background:#eef2fb;
+    }
+
+    .frames-wrap.split .frame-panel{
+      width:50%;
+      display:flex;
+    }
+
+    .frame-panel{
+      flex:1;
+      min-width:0;
+      min-height:0;
+      display:flex;
+      flex-direction:column;
+      position:relative;
+      border-right:1px solid #dfe6f3;
+      background:#fff;
+    }
+    .frame-panel:last-child{border-right:none}
+
+    /* Reduced top frame bar for more report space */
+    .frame-head{
+      min-height:44px;
+      display:flex;
+      align-items:center;
+      justify-content:flex-end;
+      gap:10px;
+      padding:8px 12px;
+      background:#f8faff;
+      border-bottom:1px solid #e5ebf5;
+    }
+
+    .frame-title{
+      display:none;
+    }
+
+    .frame-actions{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+
+    .frame-body{
+      position:relative;
+      flex:1;
+      min-height:0;
+      overflow:hidden;
+      background:#fff;
+    }
+
+    .frame-body iframe{
+      width:100%;
+      height:100%;
+      border:none;
+      display:block;
+      background:#fff;
+    }
+
+    .dropzone{
+      position:absolute;
+      inset:16px;
+      border:2px dashed #c6d6f3;
+      border-radius:16px;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      flex-direction:column;
+      gap:10px;
+      background:rgba(241,246,255,.82);
+      color:#5871a5;
+      z-index:3;
+      text-align:center;
+      padding:18px;
+    }
+    .frame-panel.empty .dropzone{
+      display:flex;
+    }
+
+    .frame-panel.drag-over .dropzone{
+      border-color:var(--accent);
+      background:rgba(232,248,255,.94);
+      color:#1f6c8c;
+    }
+
+    .skeleton{
+      position:absolute;
+      inset:0;
+      background:#fff;
+      z-index:4;
+      display:none;
+      padding:18px;
+    }
+    .skeleton.visible{display:block}
+    .sk-line,.sk-box{
+      border-radius:12px;
+      background:linear-gradient(90deg, #eef2fa 25%, #f7f9fd 37%, #eef2fa 63%);
+      background-size:400% 100%;
+      animation:shimmer 1.3s infinite linear;
+    }
+    .sk-line{height:14px; margin-bottom:12px}
+    .sk-box{height:180px; margin-top:10px}
+    .sk-line.w-30{width:30%}
+    .sk-line.w-50{width:50%}
+    .sk-line.w-70{width:70%}
+    .sk-line.w-90{width:90%}
+
+    .load-indicator{
+      position:absolute;
+      right:16px;
+      bottom:16px;
+      background:rgba(34,6,57,.92);
+      color:#fff;
+      padding:10px 14px;
+      border-radius:12px;
+      font-size:12px;
+      font-weight:700;
+      display:none;
+      z-index:6;
+      box-shadow:var(--shadow);
+    }
+    .load-indicator.visible{display:block}
+
+    .error-state{
+      position:absolute;
+      inset:20px;
+      border:1px dashed #d6dceb;
+      border-radius:16px;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      flex-direction:column;
+      text-align:center;
+      padding:24px;
+      color:#6d7594;
+      background:#fafbff;
+      z-index:5;
+    }
+    .error-state.visible{display:flex}
+    .error-state i{
+      font-size:28px;
+      color:#d36273;
+      margin-bottom:12px;
+    }
+
+    .right-panel{
+  width:var(--meta-w);
+  max-width:38vw;
+  background:var(--panel);
+  border-left:1px solid #e7ebf5;
+  box-shadow:var(--shadow-soft);
+  overflow:auto;
+  flex-shrink:0;
+  transition:width var(--transition), transform var(--transition);
+  z-index:15;
+  position:relative;
+}
+
+.meta-hide-handle{
+  position:fixed;
+  top:50%;
+  right:calc(var(--meta-w) - 2px);
+  transform:translateY(-50%);
+  height:150px;
+  width:34px;
+  border:none;
+  border-radius:16px 0 0 16px;
+  background:linear-gradient(180deg, #eef4ff, #dde9fb);
+  color:var(--brand);
+  cursor:pointer;
+  z-index:120;
+  box-shadow:0 10px 28px rgba(15,20,38,.16);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:800;
+  transition:all var(--transition);
+  border:1px solid #d7e3f6;
+}
+
+.meta-hide-handle:hover{
+  background:linear-gradient(180deg, #f6f9ff, #e7efff);
+}
+
+.meta-hide-handle .handle-text{
+  writing-mode:vertical-rl;
+  transform:rotate(180deg);
+  font-size:11px;
+  letter-spacing:.6px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  text-transform:uppercase;
+}
+
+body.meta-collapsed .meta-hide-handle{
+  display:none;
+}
+
+    .panel-section{
+      padding:16px;
+      border-bottom:1px solid #edf1f8;
+    }
+
+    .panel-section h3{
+      margin:0 0 12px;
+      color:var(--brand);
+      font-size:15px;
+    }
+
+    .meta-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+    }
+
+    .meta-item{
+      background:var(--panel-2);
+      border:1px solid #e7ebf5;
+      border-radius:12px;
+      padding:10px;
+    }
+    .meta-label{
+      font-size:11px;
+      color:var(--muted);
+      text-transform:uppercase;
+      letter-spacing:.5px;
+      font-weight:800;
+      margin-bottom:4px;
+    }
+    .meta-value{
+      font-size:13px;
+      color:var(--text);
+      font-weight:700;
+      line-height:1.4;
+      word-break:break-word;
+    }
+
+    .notes-list{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .note{
+      border-left:4px solid var(--accent);
+      background:#f7fbff;
+      border-radius:10px;
+      padding:10px 12px;
+      font-size:13px;
+      line-height:1.55;
+      color:#405072;
+    }
+    .note.warning{border-left-color:var(--warning); background:#fffaf1}
+    .note.alert{border-left-color:var(--danger); background:#fff5f6}
+
+    .tooltip{
+      position:fixed;
+      z-index:9999;
+      background:#1f2340;
+      color:#fff;
+      padding:10px 12px;
+      border-radius:10px;
+      font-size:12px;
+      max-width:280px;
+      line-height:1.45;
+      box-shadow:var(--shadow);
+      pointer-events:none;
+      opacity:0;
+      transform:translateY(6px);
+      transition:opacity .16s ease, transform .16s ease;
+    }
+    .tooltip.visible{
+      opacity:1;
+      transform:translateY(0);
+    }
+
+    .toast-wrap{
+      position:fixed;
+      right:18px;
+      bottom:18px;
+      z-index:10050;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      width:min(360px, calc(100vw - 24px));
+    }
+    .toast{
+      background:#fff;
+      border:1px solid #e8ebf5;
+      border-radius:14px;
+      box-shadow:var(--shadow);
+      padding:12px 14px;
+      display:flex;
+      gap:12px;
+      align-items:flex-start;
+      animation:slideUp .25s ease;
+    }
+    .toast i{
+      margin-top:2px;
+      color:var(--accent);
+    }
+    .toast.success i{color:var(--success)}
+    .toast.warning i{color:var(--warning)}
+    .toast.error i{color:var(--danger)}
+    .toast strong{
+      display:block;
+      margin-bottom:4px;
+      color:var(--brand);
+      font-size:13px;
+    }
+    .toast p{
+      margin:0;
+      font-size:12px;
+      color:#5c6687;
+      line-height:1.45;
+    }
+
+    .modal{
+      position:fixed;
+      inset:0;
+      background:rgba(11, 14, 28, .72);
+      z-index:9998;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:20px;
+    }
+    .modal.visible{display:flex}
+
+    .modal-card{
+      width:min(760px, 96vw);
+      max-height:86vh;
+      overflow:auto;
+      background:#fff;
+      border-radius:18px;
+      box-shadow:0 20px 60px rgba(15,20,38,.3);
+      padding:20px;
+    }
+    .modal-card h2{
+      margin:0 0 8px;
+      color:var(--brand);
+      font-size:22px;
+    }
+    .modal-card .muted{
+      color:var(--muted);
+      margin-bottom:18px;
+    }
+
+    .auth-overlay{
+      position:fixed;
+      inset:0;
+      background:radial-gradient(circle at top right, rgba(0,170,228,.15), transparent 30%), linear-gradient(135deg, #160427, #220639 48%, #0f1e3f);
+      z-index:10000;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:20px;
+    }
+
+    .auth-card{
+      width:min(480px, 95vw);
+      background:rgba(255,255,255,.08);
+      backdrop-filter:blur(12px);
+      border:1px solid rgba(255,255,255,.15);
+      border-radius:24px;
+      padding:28px;
+      color:#fff;
+      box-shadow:0 20px 60px rgba(0,0,0,.24);
+    }
+    .auth-card h1{
+      margin:14px 0 10px;
+      font-size:28px;
+      font-weight:800;
+    }
+    .auth-card p{
+      margin:0 0 16px;
+      color:rgba(255,255,255,.82);
+      line-height:1.65;
+    }
+    .auth-card .small{
+      font-size:12px;
+      color:rgba(255,255,255,.68);
+      margin-top:12px;
+    }
+    .auth-field{
+      position:relative;
+      margin-top:18px;
+    }
+    .auth-field input{
+      width:100%;
+      height:48px;
+      border:none;
+      outline:none;
+      border-radius:14px;
+      padding:0 52px 0 14px;
+      font-size:15px;
+      background:#fff;
+      color:#1f2340;
+    }
+
+    /* Hide built-in browser password reveal icons to avoid double eye */
+    .auth-field input::-ms-reveal,
+    .auth-field input::-ms-clear{
+      display:none;
+    }
+    .auth-field input::-webkit-credentials-auto-fill-button{
+      visibility:hidden;
+      display:none !important;
+      pointer-events:none;
+      position:absolute;
+      right:0;
+    }
+
+    .auth-toggle{
+      position:absolute;
+      right:8px;
+      top:50%;
+      transform:translateY(-50%);
+      height:34px;
+      width:34px;
+      border:none;
+      border-radius:10px;
+      background:#eef3fb;
+      cursor:pointer;
+      color:var(--brand);
+    }
+
+    .auth-error{
+      display:none;
+      margin-top:10px;
+      background:rgba(224,79,95,.15);
+      border:1px solid rgba(224,79,95,.35);
+      color:#ffd9dd;
+      border-radius:12px;
+      padding:10px 12px;
+      font-size:13px;
+      font-weight:700;
+    }
+    .auth-error.visible{
+      display:block;
+    }
+
+    .empty-state{
+      border:1px dashed #d7dfef;
+      border-radius:16px;
+      padding:22px;
+      text-align:center;
+      color:#7380a1;
+      background:#fafcff;
+    }
+
+    .footer-link{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      margin-top:14px;
+      color:#d5deff;
+      text-decoration:none;
+      font-size:13px;
+      font-weight:700;
+    }
+
+    .breadcrumbs{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      font-size:12px;
+      color:var(--muted);
+      margin-left:4px;
+      min-width:0;
+      flex-wrap:wrap;
+    }
+
+    .hidden{display:none !important}
+
+    .right-panel{
+  width:var(--meta-w);
+  max-width:38vw;
+  background:var(--panel);
+  border-left:1px solid #e7ebf5;
+  box-shadow:var(--shadow-soft);
+  overflow:auto;
+  flex-shrink:0;
+  transition:width var(--transition), transform var(--transition);
+  z-index:15;
+  position:relative;
+}
+
+.meta-hide-handle{
+  position:fixed;
+  top:50%;
+  right:calc(var(--meta-w) - 2px);
+  transform:translateY(-50%);
+  height:150px;
+  width:34px;
+  border:none;
+  border-radius:16px 0 0 16px;
+  background:linear-gradient(180deg, #eef4ff, #dde9fb);
+  color:var(--brand);
+  cursor:pointer;
+  z-index:120;
+  box-shadow:0 10px 28px rgba(15,20,38,.16);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:800;
+  transition:all var(--transition);
+  border:1px solid #d7e3f6;
+}
+
+.meta-hide-handle:hover{
+  background:linear-gradient(180deg, #f6f9ff, #e7efff);
+}
+
+.meta-hide-handle .handle-text{
+  writing-mode:vertical-rl;
+  transform:rotate(180deg);
+  font-size:11px;
+  letter-spacing:.6px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  text-transform:uppercase;
+}
+
+body.meta-collapsed .meta-hide-handle{
+  display:none;
+}
+
+    @keyframes shimmer{
+      0%{background-position:100% 50%}
+      100%{background-position:0 50%}
+    }
+    @keyframes fadeIn{
+      from{opacity:0; transform:translateY(-4px)}
+      to{opacity:1; transform:translateY(0)}
+    }
+    @keyframes slideUp{
+      from{opacity:0; transform:translateY(14px)}
+      to{opacity:1; transform:translateY(0)}
+    }
+
+    @media (max-width: 1180px){
+  .right-panel{display:none}
+  .meta-hide-handle{display:none !important}
+  #showMetaBtn{display:none !important}
+  .grid.cols-4{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .grid.cols-3{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+
+@media (max-width: 860px){
+  .sidebar{
+    position:absolute;
+    inset:0 auto 0 0;
+    height:100%;
+    width:min(92vw, 320px);
+  }
+
+  .sidebar-hide-handle{
+    left:min(92vw, 320px);
+  }
+
+  .header-center{justify-content:flex-start}
+  .grid.cols-4,.grid.cols-3,.grid.cols-2{grid-template-columns:1fr}
+  .toolbar{padding:10px}
+  .home-screen, .report-screen{inset:10px}
+  .frames-wrap.split{
+    flex-direction:column;
+  }
+  .frames-wrap.split .frame-panel{
+    width:100%;
+    height:50%;
+  }
+}
   </style>
 </head>
+<body>
+  <div class="app">
+    <div class="auth-overlay" id="authOverlay">
+      <div class="auth-card">
+        <img src="https://eatechnology.com/assets/img/logo.svg" alt="EA Technology logo" class="logo">
+        <h1>Marketing Intelligence Portal</h1>
+        <p>
+          Welcome. This dashboard provides authorised access to marketing performance reporting, business unit reporting,
+          campaign analytics, search visibility, PR reporting, funnel insights, and ROI-linked reporting.
+        </p>
+        <p>
+          <strong>Authorised users only.</strong> Your session will be remembered on this browser for a limited time.
+        </p>
 
-<body class="report-body">
-  <div id="reportPasswordOverlay">
-    <input type="password" id="reportPasswordInput" placeholder="Enter Password">
-    <button onclick="reportCheckPassword()">Submit</button>
-  </div>
-
-  <div class="report-header">
-    <button class="toggle-sidebar-btn" onclick="toggleSidebar()">
-      <i class="fas fa-bars"></i>
-    </button>
-    <img src="https://eatechnology.com/assets/img/logo.svg" alt="Company Logo" class="report-logo">
-    <h1>Marketing Activity Dashboard</h1>
-
-    <button id="toggleCompareBtn" style="background:#00AAE4;color:#220639;border:none;padding:8px 12px;border-radius:5px;cursor:pointer;margin-left:10px;font-weight:700;">
-      <i class="fas fa-columns"></i> Compare Reports
-    </button>
-
-    <button id="resetSplitBtn" style="background:#444;color:white;border:none;padding:8px 12px;border-radius:5px;cursor:pointer;margin-left:10px;font-weight:700;display:none;">
-      <i class="fas fa-rotate-left"></i> Reset Split View
-    </button>
-
-    <button id="showUpdatesBtn" style="background:#00AAE4;color:#220639;border:none;padding:8px 12px;border-radius:5px;cursor:pointer;margin-left:10px;font-weight:700;">
-      <i class="fas fa-bell"></i> What's New
-    </button>
-  </div>
-
-  <div class="report-content-container">
-    <div class="report-sidebar" id="sidebar">
-      <h2>Quick Navigation</h2>
-      <input type="text" id="menuSearchInput" placeholder="Search reports..." style="margin-bottom: 10px; padding: 5px; border-radius: 5px; width: 100%; box-sizing: border-box;">
-
-      <div class="report-menu">
-        <button class="report-menu-header"><i class="fas fa-chart-line"></i> MQLs &amp; Key Insights</button>
-        <div class="report-menu-items">
-          <button data-report-id="mqls-fy26"
-                  onclick="reportLoadById('mqls-fy26', this)">
-            <i class="fas fa-chart-pie"></i>FY 26
+        <div class="auth-field">
+          <input type="password" id="authPassword" placeholder="Enter access password" />
+          <button class="auth-toggle" id="togglePasswordBtn" aria-label="Show or hide password">
+            <i class="fas fa-eye"></i>
           </button>
+        </div>
 
-          <button data-report-id="mqls-am-fy26"
-                  onclick="reportLoadById('mqls-am-fy26', this)">
-            <i class="fas fa-chart-pie"></i> AM FY 26
-          </button>
+        <div class="auth-error" id="authError">
+          <i class="fas fa-triangle-exclamation"></i>
+          Incorrect password. Please try again.
+        </div>
 
-          <button data-report-id="mqls-visnet-fy26"
-                  onclick="reportLoadById('mqls-visnet-fy26', this)">
-            <i class="fas fa-chart-pie"></i> VisNet FY 26
+        <div style="display:flex; gap:10px; margin-top:16px;">
+          <button class="primary-btn" id="authSubmitBtn">
+            <i class="fas fa-arrow-right-to-bracket"></i>
+            Continue
           </button>
+        </div>
 
-          <button data-report-id="mqls-am-fy25"
-                  onclick="reportLoadById('mqls-am-fy25', this)">
-            <i class="fas fa-chart-pie"></i> AM FY 25
-          </button>
-
-          <button data-report-id="mqls-visnet-fy25"
-                  onclick="reportLoadById('mqls-visnet-fy25', this)">
-            <i class="fas fa-chart-pie"></i> VisNet FY 25
-          </button>
+        <div class="small">
+          Access note: some reports also require existing application permissions, public embed access, or Dynamics login.
         </div>
       </div>
+    </div>
 
-      <button data-report-id="form-submissions"
-              onclick="reportLoadById('form-submissions', this)">
-        <i class="fas fa-file-signature"></i> Form Submissions
-      </button>
-
-      <div class="report-menu">
-        <button class="report-menu-header"><i class="fas fa-globe"></i> VisNet Website</button>
-        <div class="report-menu-items">
-          <button data-report-id="visnet-ga"
-                  onclick="reportLoadById('visnet-ga', this)">
-            <i class="fas fa-chart-area"></i> Google Analytics
-          </button>
-
-          <button data-report-id="visnet-search-analytics"
-                  onclick="reportLoadById('visnet-search-analytics', this)">
-            <i class="fas fa-search"></i> Search Analytics
-          </button>
-
-          <button data-report-id="visnet-country-traffic"
-                  onclick="reportLoadById('visnet-country-traffic', this)">
-            <i class="fas fa-flag"></i> Country Specific Web Traffic
-          </button>
-        </div>
-      </div>
-
-      <div class="report-menu">
-        <button class="report-menu-header"><i class="fas fa-building"></i> EA Website</button>
-        <div class="report-menu-items">
-          <button data-report-id="ea-ga"
-                  onclick="reportLoadById('ea-ga', this)">
-            <i class="fas fa-chart-area"></i> Google Analytics
-          </button>
-
-          <button data-report-id="ea-search-analytics"
-                  onclick="reportLoadById('ea-search-analytics', this)">
-            <i class="fas fa-search"></i> Search Analytics
-          </button>
-        </div>
-      </div>
-
-      <button data-report-id="visnet-monitoring"
-              onclick="reportLoadById('visnet-monitoring', this)">
-        <i class="fas fa-desktop"></i> VisNet Monitoring
-      </button>
-
-      <button data-report-id="visnet-modelling"
-              onclick="reportLoadById('visnet-modelling', this)">
-        <i class="fas fa-desktop"></i> VisNet Modelling
-      </button>
-
-      <button data-report-id="training"
-              onclick="reportLoadById('training', this)">
-        <i class="fas fa-chalkboard-teacher"></i> Training
-      </button>
-
-      <button data-report-id="net-zero"
-              onclick="reportLoadById('net-zero', this)">
-        <i class="fas fa-leaf"></i> Net Zero
-      </button>
-
-      <button data-report-id="ampss"
-              onclick="reportLoadById('ampss', this)">
-        <i class="fas fa-network-wired"></i> AMPSS
-      </button>
-
-      <button data-report-id="aim"
-              onclick="reportLoadById('aim', this)">
-        <i class="fas fa-lightbulb"></i> AIM
-      </button>
-
-      <button data-report-id="ultratev"
-              onclick="reportLoadById('ultratev', this)">
-        <i class="fas fa-bolt"></i> UltraTev
-      </button>
-
-      <button data-report-id="oil-forensics"
-              onclick="reportLoadById('oil-forensics', this)">
-        <i class="fas fa-vials"></i> Oil &amp; Forensics
-      </button>
-
-      <div class="report-menu">
-        <button class="report-menu-header"><i class="fas fa-search"></i> SEO</button>
-        <div class="report-menu-items">
-          <button data-report-id="seo-keyword-tracker"
-                  onclick="reportLoadById('seo-keyword-tracker', this)">
-            <i class="fas fa-key"></i> Keyword Position Tracker
-          </button>
-
-          <button data-report-id="seo-domain-authority"
-                  onclick="reportLoadById('seo-domain-authority', this)">
-            <i class="fas fa-sitemap"></i> Domain Authority
-          </button>
-
-          <button data-report-id="seo-page-speed"
-                  onclick="reportLoadById('seo-page-speed', this)">
-            <i class="fas fa-tachometer-alt"></i> Page Speed
-          </button>
-
-          <button data-report-id="seo-health-score"
-                  onclick="reportLoadById('seo-health-score', this)">
-            <i class="fas fa-heartbeat"></i> Health Score
-          </button>
-        </div>
-      </div>
-
-      <button data-report-id="email"
-              onclick="reportLoadById('email', this)">
-        <i class="fas fa-envelope"></i> Email
-      </button>
-
-      <button data-report-id="events"
-              onclick="reportLoadById('events', this)">
-        <i class="fas fa-calendar"></i> Events
-      </button>
-
-      <button data-report-id="pr"
-              onclick="reportLoadById('pr', this)">
-        <i class="fas fa-microphone"></i> PR
-      </button>
-
-      <div class="report-menu">
-        <button class="report-menu-header"><i class="fas fa-bullseye"></i> PPC</button>
-        <div class="report-menu-items">
-          <button data-report-id="ppc-google"
-                  onclick="reportLoadById('ppc-google', this)">
-            <i class="fab fa-google"></i> Google
-          </button>
-
-          <button data-report-id="ppc-bing"
-                  onclick="reportLoadById('ppc-bing', this)">
-            <i class="fab fa-bing"></i> Bing
-          </button>
-
-          <button data-report-id="ppc-campaign-source-conv"
-                  onclick="reportLoadById('ppc-campaign-source-conv', this)">
-            <i class="fas fa-bullseye"></i> Campaign Source/Conversions
-          </button>
-        </div>
-      </div>
-
-      <div class="report-menu">
-        <button class="report-menu-header"><i class="fas fa-share-alt"></i> Social Media</button>
-        <div class="report-menu-items">
-          <button data-report-id="social-organic-linkedin"
-                  onclick="reportLoadById('social-organic-linkedin', this)">
-            <i class="fas fa-leaf"></i> Organic - LinkedIn
-          </button>
-
-          <button data-report-id="social-paid-linkedin"
-                  onclick="reportLoadById('social-paid-linkedin', this)">
-            <i class="fab fa-linkedin"></i> Paid - LinkedIn
-          </button>
-
-          <button data-report-id="social-paid-meta"
-                  onclick="reportLoadById('social-paid-meta', this)">
-            <i class="fab fa-facebook"></i> Paid - Meta
-          </button>
-        </div>
-      </div>
-
-      <div class="report-menu">
-        <button class="report-menu-header"><i class="fas fa-funnel-dollar"></i> Marketing Funnel</button>
-        <div class="report-menu-items">
-          <button data-report-id="funnel-am-fy26"
-                  onclick="reportLoadById('funnel-am-fy26', this)">
-            <i class="fas fa-filter"></i> AM FY26
-          </button>
-
-          <button data-report-id="funnel-visnet-fy26"
-                  onclick="reportLoadById('funnel-visnet-fy26', this)">
-            <i class="fas fa-filter"></i> VisNet FY26
-          </button>
-
-          <button data-report-id="funnel-am-fy25"
-                  onclick="reportLoadById('funnel-am-fy25', this)">
-            <i class="fas fa-filter"></i> AM FY25
-          </button>
-
-          <button data-report-id="funnel-visnet-fy25"
-                  onclick="reportLoadById('funnel-visnet-fy25', this)">
-            <i class="fas fa-filter"></i> VisNet FY25
-          </button>
-        </div>
-
-        <!-- NOTE: These two were inside your Marketing Funnel block in the original code.
-             Keeping them here to match your layout intent. -->
-        <button data-report-id="ai-traffic"
-                onclick="reportLoadById('ai-traffic', this)">
-          <i class="fas fa-microphone"></i> AI Traffic
+    <header class="header">
+      <div class="header-left">
+        <button class="icon-btn" id="toggleSidebarBtn" title="Toggle sidebar">
+          <i class="fas fa-bars"></i>
         </button>
-
-        <button data-report-id="enlit-banner-campaign"
-                onclick="reportLoadById('enlit-banner-campaign', this)">
-          <i class="fas fa-chart-line"></i> Enlit Banner Campaign
+        <button class="icon-btn" id="goHomeBtn" title="Go to home">
+          <i class="fas fa-house"></i>
         </button>
       </div>
 
-      <div id="feedbackLink" tabindex="0" onclick="window.open('mailto:rameez.majeed@eatechnology.com?subject=Dashboard Feedback')">
-        <i class="fas fa-comment"></i> Give Feedback
-      </div>
-    </div>
-
-    <div class="report-main-content">
-      <div id="loadingIndicator"><i class="fas fa-spinner fa-spin"></i> Loading Report...</div>
-
-      <div id="reportFramesContainer">
-        <iframe id="reportFrame"
-                src="https://lookerstudio.google.com/embed/reporting/9a0a08f9-ba9c-4fd6-865c-86091882f3a5/page/p_pp46nz7h9c/"
-                onload="hideLoading()"
-                onerror="reportShowErrorMessage()"></iframe>
-
-        <iframe id="reportFrame2"
-                style="display:none;"
-                onload="hideLoading()"
-                onerror="reportShowErrorMessage()"></iframe>
-
-        <!-- Floating control buttons -->
-        <button id="leftControlBtn" class="control-toggle-btn">🟢 Control</button>
-        <button id="rightControlBtn" class="control-toggle-btn locked">🔒 Locked</button>
+      <div class="header-center">
+        <img src="https://eatechnology.com/assets/img/logo.svg" alt="Company Logo" class="logo">
+        <div class="title-wrap">
+          <h1 class="page-title">Marketing Intelligence Portal</h1>
+          <div class="page-subtitle" id="headerSubtitle">Advanced reporting hub for marketing, digital performance and business unit insights</div>
+        </div>
       </div>
 
-      <div id="reportErrorMessage">
-        Oops! The report could not be loaded. Please check if the report is shared publicly or try again later.
+      <div class="header-right">
+        <button class="ghost-btn" id="toggleCompareBtn">
+          <i class="fas fa-columns"></i>
+          Compare
+        </button>
+        <button class="ghost-btn" id="releaseNotesBtn">
+          <i class="fas fa-bell"></i>
+          What’s New
+        </button>
+        <button class="ghost-btn" id="toggleMetaBtn">
+          <i class="fas fa-circle-info"></i>
+          Details
+        </button>
       </div>
+    </header>
+
+    <div class="layout">
+      <aside class="sidebar" id="sidebar">
+        <button class="sidebar-hide-handle" id="sidebarHideHandle" title="Hide menu">
+  <span class="handle-text"><i class="fas fa-angle-left"></i> Hide Menu</span>
+</button>
+
+        <div class="sidebar-section">
+          <h2>Search & Quick Filters</h2>
+          <div class="search-wrap">
+            <i class="fas fa-search"></i>
+            <input id="menuSearchInput" type="text" placeholder="Search reports, tags, aliases..." />
+          </div>
+        </div>
+
+        <div class="sidebar-section">
+          <h2>Quick Access</h2>
+          <div class="list" id="favouritesList"></div>
+        </div>
+
+        <div class="sidebar-section">
+          <h2>Report Library</h2>
+          <div id="menuContainer"></div>
+          <div class="empty-state hidden" id="searchEmptyState">
+            <i class="fas fa-search" style="font-size:22px; margin-bottom:10px;"></i>
+            <div><strong>No reports found</strong></div>
+            <div style="font-size:12px; margin-top:6px;">Try another keyword such as SEO, PPC, leads, ROI, PR or analytics.</div>
+          </div>
+        </div>
+
+        <a class="footer-link" href="mailto:rameez.majeed@eatechnology.com?subject=Dashboard Feedback">
+          <i class="fas fa-comment-dots"></i>
+          Give Feedback
+        </a>
+      </aside>
+
+<button class="floating-show-btn" id="showSidebarBtn" title="Show menu">
+  <span class="handle-text"><i class="fas fa-angle-right"></i> Show Menu</span>
+</button>
+
+      <main class="main">
+        <div class="toolbar">
+          <div class="toolbar-left">
+            <div class="toolbar-pill" id="currentReportPill">
+              <i class="fas fa-house"></i>
+              <span>Home</span>
+            </div>
+
+            <div class="breadcrumbs" id="breadcrumbs">
+              <span>Home</span>
+            </div>
+          </div>
+
+          <div class="toolbar-right">
+            <button class="secondary-btn" id="bookmarkBtn" title="Bookmark / favourite current report">
+              <i class="fas fa-star"></i>
+              Bookmark
+            </button>
+            <button class="secondary-btn" id="refreshBtn" title="Refresh current report">
+              <i class="fas fa-rotate"></i>
+              Refresh
+            </button>
+            <button class="secondary-btn" id="resetViewBtn" title="Reset current report to its original saved URL">
+              <i class="fas fa-filter-circle-xmark"></i>
+              Reset View
+            </button>
+            <button class="secondary-btn" id="copyLinkBtn" title="Copy a direct link to the selected report">
+              <i class="fas fa-link"></i>
+              Copy Link
+            </button>
+            <button class="secondary-btn" id="openNewTabBtn" title="Open report in a new tab">
+              <i class="fas fa-up-right-from-square"></i>
+              Open
+            </button>
+            <button class="secondary-btn" id="fullscreenBtn" title="Fullscreen mode">
+              <i class="fas fa-expand"></i>
+              Fullscreen
+            </button>
+            <button class="secondary-btn" id="printBtn" title="Print this page / print view">
+              <i class="fas fa-print"></i>
+              Print
+            </button>
+          </div>
+        </div>
+
+        <div class="content">
+          <div class="viewport">
+            <section class="home-screen" id="homeScreen">
+              <div class="home-hero">
+                <div>
+                  <h3>Welcome to the Marketing Intelligence Portal</h3>
+                  <p>
+                    Use this hub to access marketing performance reporting, ROI-linked dashboards, website analytics,
+                    search visibility reporting, PPC, social, PR, funnel analysis and business unit views.
+                    Pin your favourites, compare reports side-by-side, and use the release notes and health indicators to work faster.
+                  </p>
+                </div>
+                <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                  <button class="primary-btn" id="homeOpenTopReportBtn">
+                    <i class="fas fa-chart-line"></i>
+                    Open Top Report
+                  </button>
+                  <button class="secondary-btn" id="homeOpenRecentBtn">
+                    <i class="fas fa-clock-rotate-left"></i>
+                    Resume Last Report
+                  </button>
+                </div>
+              </div>
+
+              <div class="grid cols-4" style="margin-bottom:16px;">
+                <div class="card stat-card">
+                  <div class="stat-label">Total Reports</div>
+                  <div class="stat-value" id="statTotalReports">0</div>
+                  <div class="mini-note">Available in the current portal menu</div>
+                </div>
+                <div class="card stat-card">
+                  <div class="stat-label">Favourites / Pinned</div>
+                  <div class="stat-value" id="statFavourites">0</div>
+                  <div class="mini-note">Your saved quick-access reports</div>
+                </div>
+                <div class="card stat-card">
+                  <div class="stat-label">Most Viewed</div>
+                  <div class="stat-value" id="statTopViews">0</div>
+                  <div class="mini-note">Highest view count for a single report on this browser</div>
+                </div>
+                <div class="card stat-card">
+                  <div class="stat-label">Recently Opened</div>
+                  <div class="stat-value" id="statRecent">0</div>
+                  <div class="mini-note">Reports opened in your recent history</div>
+                </div>
+              </div>
+
+              <div class="grid cols-2">
+                <div class="card">
+                  <h4><i class="fas fa-star"></i> Favourites</h4>
+                  <div class="list" id="homeFavourites"></div>
+                </div>
+
+                <div class="card">
+                  <h4><i class="fas fa-fire"></i> Most Viewed Reports</h4>
+                  <div class="list" id="homeMostViewed"></div>
+                </div>
+
+                <div class="card">
+                  <h4><i class="fas fa-clock"></i> Recently Viewed</h4>
+                  <div class="list" id="homeRecentlyViewed"></div>
+                </div>
+
+                <div class="card">
+                  <h4><i class="fas fa-bell"></i> Latest Updates & Notes</h4>
+                  <div class="notes-list" id="homeNotes"></div>
+                </div>
+              </div>
+            </section>
+
+            <section class="report-screen" id="reportScreen">
+              <div class="frames-wrap" id="framesWrap">
+                <div class="frame-panel empty" id="leftPanel" data-slot="left">
+                  <div class="frame-head">
+                    <div class="frame-title">
+                      <strong id="leftFrameTitle">No report selected</strong>
+                    </div>
+                    <div class="frame-actions">
+                      <span class="badge internal" id="leftFrameAccess">Waiting</span>
+                    </div>
+                  </div>
+                  <div class="frame-body">
+                    <div class="dropzone" data-slot="left">
+                      <i class="fas fa-hand-pointer" style="font-size:24px;"></i>
+                      <strong>Drop a report here</strong>
+                      <div style="font-size:12px;">Drag a report from the sidebar or click any report to load it.</div>
+                    </div>
+
+                    <div class="skeleton" id="leftSkeleton">
+                      <div class="sk-line w-30"></div>
+                      <div class="sk-line w-90"></div>
+                      <div class="sk-line w-70"></div>
+                      <div class="sk-box"></div>
+                      <div class="sk-line w-50" style="margin-top:16px;"></div>
+                      <div class="sk-line w-90"></div>
+                    </div>
+
+                    <iframe id="reportFrame"></iframe>
+
+                    <div class="error-state" id="leftErrorState">
+                      <i class="fas fa-triangle-exclamation"></i>
+                      <strong style="color:var(--brand); margin-bottom:6px;">This report could not be displayed</strong>
+                      <div style="max-width:480px;">
+                        The report may require access, may not allow embedding, may need an active sign-in session,
+                        or the source may be temporarily unavailable.
+                      </div>
+                    </div>
+
+                    <div class="load-indicator" id="leftLoadIndicator">
+                      <i class="fas fa-spinner fa-spin"></i> Loading report...
+                    </div>
+                  </div>
+                </div>
+
+                <div class="frame-panel empty hidden" id="rightPanel" data-slot="right">
+                  <div class="frame-head">
+                    <div class="frame-title">
+                      <strong id="rightFrameTitle">Drop second report here</strong>
+                    </div>
+                    <div class="frame-actions">
+                      <span class="badge internal" id="rightFrameAccess">Ready</span>
+                    </div>
+                  </div>
+                  <div class="frame-body">
+                    <div class="dropzone" data-slot="right">
+                      <i class="fas fa-up-right-and-down-left-from-center" style="font-size:24px;"></i>
+                      <strong>Drop a report into the compare slot</strong>
+                      <div style="font-size:12px;">Use compare mode to analyse two reports side by side.</div>
+                    </div>
+
+                    <div class="skeleton" id="rightSkeleton">
+                      <div class="sk-line w-30"></div>
+                      <div class="sk-line w-90"></div>
+                      <div class="sk-line w-70"></div>
+                      <div class="sk-box"></div>
+                      <div class="sk-line w-50" style="margin-top:16px;"></div>
+                      <div class="sk-line w-90"></div>
+                    </div>
+
+                    <iframe id="reportFrame2"></iframe>
+
+                    <div class="error-state" id="rightErrorState">
+                      <i class="fas fa-triangle-exclamation"></i>
+                      <strong style="color:var(--brand); margin-bottom:6px;">This report could not be displayed</strong>
+                      <div style="max-width:480px;">
+                        The report may require access, may not allow embedding, may need an active sign-in session,
+                        or the source may be temporarily unavailable.
+                      </div>
+                    </div>
+
+                    <div class="load-indicator" id="rightLoadIndicator">
+                      <i class="fas fa-spinner fa-spin"></i> Loading report...
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </div>
+
+          <aside class="right-panel" id="rightPanelMeta">
+            <button class="meta-hide-handle" id="metaHideHandle" title="Hide report details">
+  <span class="handle-text"><i class="fas fa-angle-right"></i> Hide Details</span>
+</button>
+
+            <div class="panel-section">
+              <h3><i class="fas fa-circle-info"></i> Report Summary</h3>
+              <div id="metaSummary" class="empty-state">
+                Select a report to see description, access notes, health details and recent activity.
+              </div>
+            </div>
+
+            <div class="panel-section">
+              <h3><i class="fas fa-layer-group"></i> Metadata</h3>
+              <div class="meta-grid" id="metaGrid"></div>
+            </div>
+
+            <div class="panel-section">
+              <h3><i class="fas fa-bullhorn"></i> Report Notes</h3>
+              <div class="notes-list" id="reportNotes"></div>
+            </div>
+
+            <div class="panel-section">
+              <h3><i class="fas fa-heart-pulse"></i> Health Monitoring</h3>
+              <div class="meta-grid" id="healthGrid"></div>
+            </div>
+          </aside>
+
+          <button class="floating-show-btn" id="showMetaBtn" title="Show report details">
+  <span class="handle-text"><i class="fas fa-angle-left"></i> Show Report Details</span>
+</button>
+
+        <div class="toolbar" id="compareToolbar" style="display:none;">
+          <div class="toolbar-left split-actions">
+            <div class="toolbar-pill">
+              <i class="fas fa-code-compare"></i>
+              <span>Compare Workspace</span>
+            </div>
+
+            <select id="comparePresetSelect" class="toolbar-pill" style="border:none; outline:none; background:var(--panel-2);">
+              <option value="">Compare Presets</option>
+              <option value="fy26_vs_fy25">FY26 vs FY25</option>
+              <option value="am_vs_visnet">AM vs VisNet</option>
+              <option value="organic_vs_paid">Organic vs Paid</option>
+              <option value="ea_vs_visnet_web">EA Website vs VisNet Website</option>
+            </select>
+
+            <button class="secondary-btn" id="duplicateCurrentBtn">
+              <i class="fas fa-clone"></i>
+              Duplicate Current
+            </button>
+            <button class="secondary-btn" id="swapFramesBtn">
+              <i class="fas fa-right-left"></i>
+              Swap Panels
+            </button>
+          </div>
+
+          <div class="toolbar-right">
+            <button class="danger-btn" id="exitCompareBtn">
+              <i class="fas fa-xmark"></i>
+              Exit Compare
+            </button>
+          </div>
+        </div>
+      </main>
     </div>
   </div>
-<!-- =========================
-     Chatbot Widget (LLM-assisted)
-     ========================= -->
-<div id="chatbotFab" title="Ask the dashboard">
-  <i class="fas fa-comment-dots"></i>
-</div>
 
-<div id="chatbotPanel" class="chatbot-hidden" aria-live="polite">
-  <div id="chatbotHeader">
-    <div>
-      <strong>Dashboard Q&amp;A</strong><br>
-      <span style="font-size:12px;opacity:0.85;">
-        Ask “Where is AI Traffic?” or “Open SEO Health Score”
-      </span>
+  <div class="modal" id="releaseNotesModal">
+    <div class="modal-card">
+      <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:16px;">
+        <div>
+          <h2>What’s New</h2>
+          <div class="muted">Release notes, dashboard improvements and reporting announcements</div>
+        </div>
+        <button class="secondary-btn" data-close-modal="releaseNotesModal">
+          <i class="fas fa-xmark"></i> Close
+        </button>
+      </div>
+
+      <div class="notes-list" id="releaseNotesList"></div>
     </div>
-    <button id="chatbotCloseBtn" title="Close">✕</button>
   </div>
 
-  <div id="chatbotMessages"></div>
+  <div class="tooltip" id="tooltip"></div>
+  <div class="toast-wrap" id="toastWrap"></div>
+<script>
+function syncFloatingHandles() {
+  const sidebarWidth = document.body.classList.contains("sidebar-collapsed")
+    ? 0
+    : els.sidebar.getBoundingClientRect().width;
 
-  <div id="chatbotInputRow">
-    <input id="chatbotInput" type="text" placeholder="Try: Open PPC Google report">
-    <button id="chatbotSendBtn">Send</button>
-  </div>
-</div>
+  const metaWidth = document.body.classList.contains("meta-collapsed")
+    ? 0
+    : els.rightPanelMeta.getBoundingClientRect().width;
+
+  if (els.sidebarHideHandle) {
+    els.sidebarHideHandle.style.left = `${Math.max(sidebarWidth - 2, 0)}px`;
+  }
+
+  if (els.metaHideHandle) {
+    els.metaHideHandle.style.right = `${Math.max(metaWidth - 2, 0)}px`;
+  }
+}
+</script>
   <script>
-    // =========================
-    // Password gating (unchanged)
-    // =========================
     async function hashMessage(msg) {
       const msgUint8 = new TextEncoder().encode(msg);
       const hashBuffer = await crypto.subtle.digest("SHA-256", msgUint8);
@@ -718,662 +1709,1977 @@
       return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
     }
 
-    // 🔒 Replace this with the SHA-256 hash of your real password
     const validHash = "e3c652f0ba0b4801205814f8b6bc49672c4c74e25b497770bb89b22cdeb4e951";
 
-    async function reportCheckPassword() {
-      const input = document.getElementById('reportPasswordInput').value;
-      const inputHash = await hashMessage(input);
+    const aliasMap = {
+      seo: ["keyword position tracker", "domain authority", "health score", "search analytics", "competitor keyword ranking analysis", "page speed"],
+      ppc: ["google", "bing", "campaign source/conversions", "paid - linkedin", "paid - meta"],
+      leads: ["mqls", "form submissions", "roi dashboard", "key insights"]
+    };
 
-      if (inputHash === validHash) {
-        localStorage.setItem('dashboardAuthTime', Date.now());
-        document.getElementById('reportPasswordOverlay').style.display = 'none';
-
-        // ✅ If user arrives via deep link, load it immediately after login
-        loadFromDeepLink();
-      } else {
-        alert("Incorrect password. Please try again.");
+    const releaseNotes = [
+      {
+        date: "17 March 2026",
+        type: "NEW",
+        title: "PR Reports Menu Update",
+        text: "All monthly PR reports are now available directly under the PR menu in the dashboard. Historical reports can now be opened by month from one location."
+      },
+      {
+        date: "17 March 2026",
+        type: "NEW",
+        title: "ROI Dashboard Added",
+        text: "Marketing ROI Dashboard has been added under MQLs & Key Insights. Existing access and Dynamics sign-in are required for successful viewing."
+      },
+      {
+        date: "13 March 2026",
+        type: "NEW",
+        title: "Competitor Keyword Ranking Analysis",
+        text: "A new SEO report has been added to compare tracked keyword rankings against competitors and identify opportunities."
+      },
+      {
+        date: "17 March 2026",
+        type: "UPDATED",
+        title: "Portal Upgraded to Advanced Reporting Hub",
+        text: "Added favourites, most viewed reports, recent history, smart search, metadata panel, split-view compare workspace, release notes and health monitoring."
       }
-    }
+    ];
 
-    function toggleSidebar() {
-      const sidebar = document.getElementById('sidebar');
-      sidebar.classList.toggle('collapsed');
-    }
-
-    // =========================
-    // Deep Linking + Report Catalog
-    // =========================
-    const REPORTS = {
-      // MQLs & Key Insights
-      "mqls-fy26": {
-        title: "MQLs",
-        url: "https://lookerstudio.google.com/embed/reporting/fcceb078-3b7c-46b3-ba4d-355d6efc110c/page/p_8jrq4g21ud"
+    const reports = [
+      {
+        id: "mqls_fy26",
+        title: "FY 26",
+        fullTitle: "MQLs & Key Insights - FY 26",
+        group: "MQLs & Key Insights",
+        icon: "fas fa-chart-pie",
+        url: "https://lookerstudio.google.com/embed/reporting/fcceb078-3b7c-46b3-ba4d-355d6efc110c/page/p_8jrq4g21ud",
+        type: "Looker Studio",
+        access: "Public",
+        status: ["UPDATED"],
+        lastUpdated: "2026-03-17",
+        tags: ["mqls", "leads", "key insights", "fy26", "marketing performance"],
+        description: "High-level MQL and key insight reporting for FY26, designed for monitoring lead generation performance and top-level marketing outcomes.",
+        notes: ["Useful for leadership and monthly performance reviews.", "Recommended related reports: Form Submissions, ROI Dashboard."],
+        aliases: ["leads", "mqls", "key insights", "fy26"],
+        categoryOrder: 1
       },
-      "mqls-am-fy26": {
+      {
+        id: "am_fy26",
         title: "AM FY 26",
-        url: "https://lookerstudio.google.com/embed/reporting/2b663a8e-07ef-4f74-9f4f-9ea7ea9b1c6b/page/p_k9c9t7qbrd/"
+        fullTitle: "MQLs & Key Insights - AM FY 26",
+        group: "MQLs & Key Insights",
+        icon: "fas fa-chart-pie",
+        url: "https://lookerstudio.google.com/embed/reporting/2b663a8e-07ef-4f74-9f4f-9ea7ea9b1c6b/page/p_k9c9t7qbrd/",
+        type: "Looker Studio",
+        access: "Public",
+        status: [],
+        lastUpdated: "2026-03-17",
+        tags: ["mqls", "am", "fy26", "leads", "performance"],
+        description: "FY26 MQL and performance reporting focused on AM reporting structure and business unit view.",
+        notes: ["Useful for AM business unit monitoring and month-end review."],
+        aliases: ["am", "fy26", "mqls", "leads"],
+        categoryOrder: 2
       },
-      "mqls-visnet-fy26": {
+      {
+        id: "visnet_fy26",
         title: "VisNet FY 26",
-        url: "https://lookerstudio.google.com/embed/reporting/fcceb078-3b7c-46b3-ba4d-355d6efc110c/page/p_jlgy4fn6md"
+        fullTitle: "MQLs & Key Insights - VisNet FY 26",
+        group: "MQLs & Key Insights",
+        icon: "fas fa-chart-pie",
+        url: "https://lookerstudio.google.com/embed/reporting/fcceb078-3b7c-46b3-ba4d-355d6efc110c/page/p_jlgy4fn6md",
+        type: "Looker Studio",
+        access: "Public",
+        status: [],
+        lastUpdated: "2026-03-17",
+        tags: ["mqls", "visnet", "fy26", "leads"],
+        description: "FY26 MQL and key insight reporting focused on VisNet marketing performance.",
+        notes: ["Useful in compare mode against AM FY26 or VisNet FY25."],
+        aliases: ["visnet", "leads", "mqls", "fy26"],
+        categoryOrder: 3
       },
-      "mqls-am-fy25": {
+      {
+        id: "am_fy25",
         title: "AM FY 25",
-        url: "https://lookerstudio.google.com/embed/reporting/2b663a8e-07ef-4f74-9f4f-9ea7ea9b1c6b/page/p_gqqz5fuard"
+        fullTitle: "MQLs & Key Insights - AM FY 25",
+        group: "MQLs & Key Insights",
+        icon: "fas fa-chart-pie",
+        url: "https://lookerstudio.google.com/embed/reporting/2b663a8e-07ef-4f74-9f4f-9ea7ea9b1c6b/page/p_gqqz5fuard",
+        type: "Looker Studio",
+        access: "Public",
+        status: [],
+        lastUpdated: "2026-03-17",
+        tags: ["mqls", "am", "fy25", "historical"],
+        description: "AM FY25 historical MQL reporting used for year-on-year and period comparison.",
+        notes: ["Best paired with AM FY26 in compare mode."],
+        aliases: ["am", "fy25", "mqls"],
+        categoryOrder: 4
       },
-      "mqls-visnet-fy25": {
+      {
+        id: "visnet_fy25",
         title: "VisNet FY 25",
-        url: "https://lookerstudio.google.com/embed/reporting/fcceb078-3b7c-46b3-ba4d-355d6efc110c/page/p_32xh2ydawd"
+        fullTitle: "MQLs & Key Insights - VisNet FY 25",
+        group: "MQLs & Key Insights",
+        icon: "fas fa-chart-pie",
+        url: "https://lookerstudio.google.com/embed/reporting/fcceb078-3b7c-46b3-ba4d-355d6efc110c/page/p_32xh2ydawd",
+        type: "Looker Studio",
+        access: "Public",
+        status: [],
+        lastUpdated: "2026-03-17",
+        tags: ["mqls", "visnet", "fy25", "historical"],
+        description: "Historical FY25 VisNet MQL reporting for performance benchmarking and year-on-year comparisons.",
+        notes: ["Best paired with VisNet FY26 in compare mode."],
+        aliases: ["visnet", "fy25", "mqls"],
+        categoryOrder: 5
       },
-
-      // Forms
-      "form-submissions": {
+      {
+        id: "roi_dashboard",
+        title: "ROI Dashboard",
+        fullTitle: "Marketing ROI Dashboard",
+        group: "MQLs & Key Insights",
+        icon: "fas fa-coins",
+        url: "https://eatl.crm11.dynamics.com/main.aspx?appid=2c5737c4-fa12-e811-a8aa-00224801a6a4&pagetype=dashboard&id=6896aa0d-b25c-f011-bec2-7c1e522d5a8b&type=user&lid=1773739299498",
+        type: "Dynamics 365 Dashboard",
+        access: "Dynamics Login Required",
+        status: ["NEW"],
+        lastUpdated: "2026-03-17",
+        tags: ["roi", "leads", "pipeline", "dynamics", "marketing roi"],
+        description: "ROI-focused dashboard that depends on Dynamics 365 access and an active sign-in session in the same browser.",
+        notes: ["ROI dashboard requires Dynamics login.", "If access is missing, the report may not display or may show an error."],
+        aliases: ["roi", "leads", "dynamics", "mqls"],
+        categoryOrder: 6
+      },
+      {
+        id: "form_submissions",
         title: "Form Submissions",
-        url: "https://lookerstudio.google.com/embed/reporting/ebe5c1e4-fff4-48fb-9726-410557212720/page/p_72i2wokhhd/"
+        fullTitle: "Form Submissions",
+        group: "Lead Generation",
+        icon: "fas fa-file-signature",
+        url: "https://lookerstudio.google.com/embed/reporting/ebe5c1e4-fff4-48fb-9726-410557212720/page/p_72i2wokhhd/",
+        type: "Looker Studio",
+        access: "Public",
+        status: [],
+        lastUpdated: "2026-03-17",
+        tags: ["forms", "submissions", "leads", "conversions"],
+        description: "Tracks form submission volumes and related lead generation activity across key web forms and conversion points.",
+        notes: ["Good companion report for MQL and ROI analysis."],
+        aliases: ["forms", "leads", "submissions"],
+        categoryOrder: 7
       },
-
-      // VisNet Website
-      "visnet-ga": {
+      {
+        id: "visnet_ga",
         title: "Google Analytics",
-        url: "https://lookerstudio.google.com/embed/reporting/ebe5c1e4-fff4-48fb-9726-410557212720/page/p_gadygi8ggd/"
+        fullTitle: "VisNet Website - Google Analytics",
+        group: "VisNet Website",
+        icon: "fas fa-chart-area",
+        url: "https://lookerstudio.google.com/embed/reporting/ebe5c1e4-fff4-48fb-9726-410557212720/page/p_gadygi8ggd/",
+        type: "Looker Studio",
+        access: "Public",
+        status: [],
+        lastUpdated: "2026-03-17",
+        tags: ["visnet", "website", "analytics", "ga4", "traffic"],
+        description: "Website traffic, user behaviour and key engagement reporting for the VisNet website.",
+        notes: ["Best compared against EA Website Google Analytics in split view."],
+        aliases: ["visnet", "ga", "analytics", "website"],
+        categoryOrder: 8
       },
-      "visnet-search-analytics": {
+      {
+        id: "visnet_search",
         title: "Search Analytics",
-        url: "https://lookerstudio.google.com/embed/reporting/ed48d87a-486f-4500-963f-c1ad286cbe93/page/p_d3fdz3zqgd/"
+        fullTitle: "VisNet Website - Search Analytics",
+        group: "VisNet Website",
+        icon: "fas fa-search",
+        url: "https://lookerstudio.google.com/embed/reporting/ed48d87a-486f-4500-963f-c1ad286cbe93/page/p_d3fdz3zqgd/",
+        type: "Looker Studio",
+        access: "Public",
+        status: [],
+        lastUpdated: "2026-03-17",
+        tags: ["visnet", "search", "seo", "organic", "website"],
+        description: "Search visibility and organic search performance reporting for the VisNet website.",
+        notes: ["Related reports: Keyword Position Tracker, Domain Authority, Health Score."],
+        aliases: ["seo", "search", "organic", "visnet"],
+        categoryOrder: 9
       },
-      "visnet-country-traffic": {
+      {
+        id: "country_traffic",
         title: "Country Specific Web Traffic",
-        url: "https://lookerstudio.google.com/embed/reporting/ebe5c1e4-fff4-48fb-9726-410557212720/page/p_uxpmtfpfld/"
+        fullTitle: "VisNet Website - Country Specific Web Traffic",
+        group: "VisNet Website",
+        icon: "fas fa-flag",
+        url: "https://lookerstudio.google.com/embed/reporting/ebe5c1e4-fff4-48fb-9726-410557212720/page/p_uxpmtfpfld/",
+        type: "Looker Studio",
+        access: "Public",
+        status: [],
+        lastUpdated: "2026-03-17",
+        tags: ["country", "traffic", "visnet", "geo", "website"],
+        description: "Country-level traffic breakdown for the VisNet website.",
+        notes: ["Useful for geographic targeting analysis and region-specific trend spotting."],
+        aliases: ["country", "traffic", "geo", "visnet"],
+        categoryOrder: 10
       },
-
-      // EA Website
-      "ea-ga": {
+      {
+        id: "ea_ga",
         title: "Google Analytics",
-        url: "https://lookerstudio.google.com/embed/reporting/2b663a8e-07ef-4f74-9f4f-9ea7ea9b1c6b/page/p_obc9jgnf9c/"
+        fullTitle: "EA Website - Google Analytics",
+        group: "EA Website",
+        icon: "fas fa-chart-area",
+        url: "https://lookerstudio.google.com/embed/reporting/2b663a8e-07ef-4f74-9f4f-9ea7ea9b1c6b/page/p_obc9jgnf9c/",
+        type: "Looker Studio",
+        access: "Public",
+        status: [],
+        lastUpdated: "2026-03-17",
+        tags: ["ea", "website", "analytics", "ga4", "traffic"],
+        description: "Website traffic, user behaviour and key engagement reporting for the EA website.",
+        notes: ["Ideal compare preset partner for VisNet Website Google Analytics."],
+        aliases: ["ea", "ga", "analytics", "website"],
+        categoryOrder: 11
       },
-      "ea-search-analytics": {
+      {
+        id: "ea_search",
         title: "Search Analytics",
-        url: "https://lookerstudio.google.com/embed/reporting/2b663a8e-07ef-4f74-9f4f-9ea7ea9b1c6b/page/p_rwg4z6sdcd/"
+        fullTitle: "EA Website - Search Analytics",
+        group: "EA Website",
+        icon: "fas fa-search",
+        url: "https://lookerstudio.google.com/embed/reporting/2b663a8e-07ef-4f74-9f4f-9ea7ea9b1c6b/page/p_rwg4z6sdcd/",
+        type: "Looker Studio",
+        access: "Public",
+        status: [],
+        lastUpdated: "2026-03-17",
+        tags: ["ea", "search", "seo", "organic"],
+        description: "Organic search performance and search visibility reporting for the EA website.",
+        notes: ["Useful with other SEO reports such as Health Score and Domain Authority."],
+        aliases: ["ea", "seo", "search", "organic"],
+        categoryOrder: 12
       },
-
-      // VisNet Products
-      "visnet-monitoring": {
+      {
+        id: "visnet_monitoring",
         title: "VisNet Monitoring",
-        url: "https://lookerstudio.google.com/embed/reporting/ebe5c1e4-fff4-48fb-9726-410557212720/page/p_rdv1w7wftd/"
+        fullTitle: "VisNet Monitoring",
+        group: "Products / Solutions",
+        icon: "fas fa-desktop",
+        url: "https://lookerstudio.google.com/embed/reporting/ebe5c1e4-fff4-48fb-9726-410557212720/page/p_rdv1w7wftd/",
+        type: "Looker Studio",
+        access: "Public",
+        status: [],
+        lastUpdated: "2026-03-17",
+        tags: ["visnet", "monitoring", "product"],
+        description: "Business unit reporting focused on VisNet Monitoring activity and related performance indicators.",
+        notes: [],
+        aliases: ["monitoring", "visnet"],
+        categoryOrder: 13
       },
-      "visnet-modelling": {
+      {
+        id: "visnet_modelling",
         title: "VisNet Modelling",
-        url: "https://lookerstudio.google.com/embed/reporting/ebe5c1e4-fff4-48fb-9726-410557212720/page/p_l8z90wxitd/"
+        fullTitle: "VisNet Modelling",
+        group: "Products / Solutions",
+        icon: "fas fa-desktop",
+        url: "https://lookerstudio.google.com/embed/reporting/ebe5c1e4-fff4-48fb-9726-410557212720/page/p_l8z90wxitd/",
+        type: "Looker Studio",
+        access: "Public",
+        status: [],
+        lastUpdated: "2026-03-17",
+        tags: ["visnet", "modelling", "product"],
+        description: "Business unit reporting focused on VisNet Modelling activity and related performance indicators.",
+        notes: [],
+        aliases: ["modelling", "visnet"],
+        categoryOrder: 14
       },
-
-      // Business Units
-      "training": {
+      {
+        id: "training",
         title: "Training",
-        url: "https://lookerstudio.google.com/embed/reporting/9a0a08f9-ba9c-4fd6-865c-86091882f3a5/page/p_pp46nz7h9c/"
+        fullTitle: "Training",
+        group: "Products / Solutions",
+        icon: "fas fa-chalkboard-teacher",
+        url: "https://lookerstudio.google.com/embed/reporting/9a0a08f9-ba9c-4fd6-865c-86091882f3a5/page/p_pp46nz7h9c/",
+        type: "Looker Studio",
+        access: "Public",
+        status: [],
+        lastUpdated: "2026-03-17",
+        tags: ["training", "courses", "performance"],
+        description: "Training-focused reporting for course and programme marketing performance.",
+        notes: [],
+        aliases: ["training", "courses"],
+        categoryOrder: 15
       },
-      "net-zero": {
+      {
+        id: "net_zero",
         title: "Net Zero",
-        url: "https://lookerstudio.google.com/embed/reporting/2b663a8e-07ef-4f74-9f4f-9ea7ea9b1c6b/page/p_r1ojqvr4nd"
+        fullTitle: "Net Zero",
+        group: "Products / Solutions",
+        icon: "fas fa-leaf",
+        url: "https://lookerstudio.google.com/embed/reporting/2b663a8e-07ef-4f74-9f4f-9ea7ea9b1c6b/page/p_r1ojqvr4nd",
+        type: "Looker Studio",
+        access: "Public",
+        status: [],
+        lastUpdated: "2026-03-17",
+        tags: ["net zero", "sustainability", "campaign"],
+        description: "Marketing performance reporting focused on Net Zero-related activity and business area visibility.",
+        notes: [],
+        aliases: ["net zero", "sustainability"],
+        categoryOrder: 16
       },
-      "ampss": {
+      {
+        id: "ampss",
         title: "AMPSS",
-        url: "https://lookerstudio.google.com/embed/reporting/2b663a8e-07ef-4f74-9f4f-9ea7ea9b1c6b/page/p_ybns6k7srd"
+        fullTitle: "AMPSS",
+        group: "Products / Solutions",
+        icon: "fas fa-network-wired",
+        url: "https://lookerstudio.google.com/embed/reporting/2b663a8e-07ef-4f74-9f4f-9ea7ea9b1c6b/page/p_ybns6k7srd",
+        type: "Looker Studio",
+        access: "Public",
+        status: [],
+        lastUpdated: "2026-03-17",
+        tags: ["ampss", "product", "performance"],
+        description: "AMPSS reporting view showing business-area-related performance and visibility metrics.",
+        notes: [],
+        aliases: ["ampss"],
+        categoryOrder: 17
       },
-      "aim": {
+      {
+        id: "aim",
         title: "AIM",
-        url: "https://lookerstudio.google.com/embed/reporting/2b663a8e-07ef-4f74-9f4f-9ea7ea9b1c6b/page/p_vu3pc48srd"
+        fullTitle: "AIM",
+        group: "Products / Solutions",
+        icon: "fas fa-lightbulb",
+        url: "https://lookerstudio.google.com/embed/reporting/2b663a8e-07ef-4f74-9f4f-9ea7ea9b1c6b/page/p_vu3pc48srd",
+        type: "Looker Studio",
+        access: "Public",
+        status: [],
+        lastUpdated: "2026-03-17",
+        tags: ["aim", "product", "performance"],
+        description: "AIM-focused reporting for business activity and related marketing performance.",
+        notes: [],
+        aliases: ["aim"],
+        categoryOrder: 18
       },
-      "ultratev": {
+      {
+        id: "ultratev",
         title: "UltraTev",
-        url: "https://lookerstudio.google.com/embed/reporting/2b663a8e-07ef-4f74-9f4f-9ea7ea9b1c6b/page/p_atmgkegetd/"
+        fullTitle: "UltraTev",
+        group: "Products / Solutions",
+        icon: "fas fa-bolt",
+        url: "https://lookerstudio.google.com/embed/reporting/2b663a8e-07ef-4f74-9f4f-9ea7ea9b1c6b/page/p_atmgkegetd/",
+        type: "Looker Studio",
+        access: "Public",
+        status: [],
+        lastUpdated: "2026-03-17",
+        tags: ["ultratev", "product", "performance"],
+        description: "UltraTev-related marketing performance reporting and visibility overview.",
+        notes: [],
+        aliases: ["ultratev"],
+        categoryOrder: 19
       },
-      "oil-forensics": {
+      {
+        id: "oil_forensics",
         title: "Oil & Forensics",
-        url: "https://lookerstudio.google.com/embed/reporting/2b663a8e-07ef-4f74-9f4f-9ea7ea9b1c6b/page/p_xh8m0z3ctd/"
+        fullTitle: "Oil & Forensics",
+        group: "Products / Solutions",
+        icon: "fas fa-vials",
+        url: "https://lookerstudio.google.com/embed/reporting/2b663a8e-07ef-4f74-9f4f-9ea7ea9b1c6b/page/p_xh8m0z3ctd/",
+        type: "Looker Studio",
+        access: "Public",
+        status: [],
+        lastUpdated: "2026-03-17",
+        tags: ["oil", "forensics", "product", "performance"],
+        description: "Marketing reporting for Oil & Forensics-related business area activity.",
+        notes: [],
+        aliases: ["oil", "forensics"],
+        categoryOrder: 20
       },
-
-      // SEO
-      "seo-keyword-tracker": {
+      {
+        id: "keyword_tracker",
         title: "Keyword Position Tracker",
-        url: "https://lookerstudio.google.com/embed/reporting/ed48d87a-486f-4500-963f-c1ad286cbe93/page/p_qjlg7ycbad/"
+        fullTitle: "SEO - Keyword Position Tracker",
+        group: "SEO",
+        icon: "fas fa-key",
+        url: "https://lookerstudio.google.com/embed/reporting/ed48d87a-486f-4500-963f-c1ad286cbe93/page/p_qjlg7ycbad/",
+        type: "Looker Studio",
+        access: "Public",
+        status: [],
+        lastUpdated: "2026-03-17",
+        tags: ["seo", "keywords", "ranking", "tracker", "organic"],
+        description: "Tracks target keyword positions over time to monitor SEO performance and ranking changes.",
+        notes: ["Recommended for weekly SEO review."],
+        aliases: ["seo", "rankings", "keywords"],
+        categoryOrder: 21
       },
-      "seo-domain-authority": {
+      {
+        id: "competitor_keyword_analysis",
+        title: "Competitor Keyword Ranking Analysis",
+        fullTitle: "SEO - Competitor Keyword Ranking Analysis",
+        group: "SEO",
+        icon: "fas fa-chart-bar",
+        url: "https://lookerstudio.google.com/embed/reporting/ed48d87a-486f-4500-963f-c1ad286cbe93/page/p_v7h6548q1d",
+        type: "Looker Studio",
+        access: "Public",
+        status: ["NEW"],
+        lastUpdated: "2026-03-13",
+        tags: ["seo", "competitor", "keywords", "ranking", "analysis"],
+        description: "Compares tracked keyword rankings against competitors to identify opportunities and relative market search visibility.",
+        notes: ["Competitor Keyword Ranking Analysis added on 13 March 2026."],
+        aliases: ["seo", "competitor", "keywords"],
+        categoryOrder: 22
+      },
+      {
+        id: "domain_authority",
         title: "Domain Authority",
-        url: "https://lookerstudio.google.com/embed/reporting/ed48d87a-486f-4500-963f-c1ad286cbe93/page/p_1yqzph3vld/"
+        fullTitle: "SEO - Domain Authority",
+        group: "SEO",
+        icon: "fas fa-sitemap",
+        url: "https://lookerstudio.google.com/embed/reporting/ed48d87a-486f-4500-963f-c1ad286cbe93/page/p_1yqzph3vld/",
+        type: "Looker Studio",
+        access: "Public",
+        status: [],
+        lastUpdated: "2026-03-17",
+        tags: ["seo", "domain authority", "authority"],
+        description: "Monitors domain authority and related search credibility indicators.",
+        notes: [],
+        aliases: ["seo", "domain authority", "authority"],
+        categoryOrder: 23
       },
-      "seo-page-speed": {
+      {
+        id: "page_speed",
         title: "Page Speed",
-        url: "https://lookerstudio.google.com/embed/reporting/ebe5c1e4-fff4-48fb-9726-410557212720/page/p_667j3sn4vd"
+        fullTitle: "SEO - Page Speed",
+        group: "SEO",
+        icon: "fas fa-tachometer-alt",
+        url: "https://lookerstudio.google.com/embed/reporting/ebe5c1e4-fff4-48fb-9726-410557212720/page/p_667j3sn4vd",
+        type: "Looker Studio",
+        access: "Public",
+        status: [],
+        lastUpdated: "2026-03-17",
+        tags: ["seo", "page speed", "technical seo", "site performance"],
+        description: "Tracks page performance indicators relevant to user experience and technical search performance.",
+        notes: [],
+        aliases: ["seo", "speed", "technical"],
+        categoryOrder: 24
       },
-      "seo-health-score": {
+      {
+        id: "health_score",
         title: "Health Score",
-        url: "https://lookerstudio.google.com/embed/reporting/ebe5c1e4-fff4-48fb-9726-410557212720/page/p_k7wtaby9vd"
+        fullTitle: "SEO - Health Score",
+        group: "SEO",
+        icon: "fas fa-heartbeat",
+        url: "https://lookerstudio.google.com/embed/reporting/ebe5c1e4-fff4-48fb-9726-410557212720/page/p_k7wtaby9vd",
+        type: "Looker Studio",
+        access: "Public",
+        status: [],
+        lastUpdated: "2026-03-17",
+        tags: ["seo", "health score", "technical health"],
+        description: "Technical SEO health reporting highlighting crawl, health and site-quality trends.",
+        notes: [],
+        aliases: ["seo", "health", "technical"],
+        categoryOrder: 25
       },
-
-      // Email / Events / PR
-      "email": {
+      {
+        id: "email",
         title: "Email",
-        url: "https://lookerstudio.google.com/embed/reporting/78376592-1e70-407c-8e8d-7bf6c085c5cb/page/p_sb1dx8khhd/"
+        fullTitle: "Email",
+        group: "Channels",
+        icon: "fas fa-envelope",
+        url: "https://lookerstudio.google.com/embed/reporting/78376592-1e70-407c-8e8d-7bf6c085c5cb/page/p_sb1dx8khhd/",
+        type: "Looker Studio",
+        access: "Public",
+        status: [],
+        lastUpdated: "2026-03-17",
+        tags: ["email", "campaigns", "channel"],
+        description: "Email marketing activity, engagement and related campaign performance reporting.",
+        notes: [],
+        aliases: ["email"],
+        categoryOrder: 26
       },
-      "events": {
+      {
+        id: "events",
         title: "Events",
-        url: "https://lookerstudio.google.com/embed/reporting/78376592-1e70-407c-8e8d-7bf6c085c5cb/page/p_vbl76okhhd/"
+        fullTitle: "Events",
+        group: "Channels",
+        icon: "fas fa-calendar",
+        url: "https://lookerstudio.google.com/embed/reporting/78376592-1e70-407c-8e8d-7bf6c085c5cb/page/p_vbl76okhhd/",
+        type: "Looker Studio",
+        access: "Public",
+        status: [],
+        lastUpdated: "2026-03-17",
+        tags: ["events", "channel", "engagement"],
+        description: "Events activity and related performance reporting.",
+        notes: [],
+        aliases: ["events"],
+        categoryOrder: 27
       },
-      "pr": {
-        title: "PR",
-        url: "https://lookerstudio.google.com/embed/reporting/78376592-1e70-407c-8e8d-7bf6c085c5cb/page/p_81eydpkhhd/"
+      {
+        id: "pr_feb_2026",
+        title: "February 2026",
+        fullTitle: "PR - February 2026",
+        group: "PR",
+        icon: "fas fa-external-link-alt",
+        url: "https://releasd.com/pages/XXMJsJAuuuGxGIvzO1PynnJOelE4wWnVfa-DK9-IQuA=",
+        type: "External PR Report",
+        access: "External Link",
+        status: ["UPDATED"],
+        lastUpdated: "2026-02-28",
+        tags: ["pr", "february 2026", "external"],
+        description: "Monthly external PR report for February 2026.",
+        notes: ["PR reports moved to monthly archive."],
+        aliases: ["pr", "february", "2026"],
+        categoryOrder: 28
       },
-
-      // PPC
-      "ppc-google": {
+      {
+        id: "pr_jan_2026",
+        title: "January 2026",
+        fullTitle: "PR - January 2026",
+        group: "PR",
+        icon: "fas fa-external-link-alt",
+        url: "https://releasd.com/pages/1U2_qSuq-GqzmhEB2ni9RAHlePO8CJgGTuaP1Ifwrug=",
+        type: "External PR Report",
+        access: "External Link",
+        status: [],
+        lastUpdated: "2026-01-31",
+        tags: ["pr", "january 2026", "external"],
+        description: "Monthly external PR report for January 2026.",
+        notes: ["PR reports moved to monthly archive."],
+        aliases: ["pr", "january", "2026"],
+        categoryOrder: 29
+      },
+      {
+        id: "pr_dec_2025",
+        title: "December 2025",
+        fullTitle: "PR - December 2025",
+        group: "PR",
+        icon: "fas fa-external-link-alt",
+        url: "https://releasd.com/pages/16PrKdod0NsMHxeuxOLaOfeV3n1mET5qObVhITITdDk=",
+        type: "External PR Report",
+        access: "External Link",
+        status: [],
+        lastUpdated: "2025-12-31",
+        tags: ["pr", "december 2025", "external"],
+        description: "Monthly external PR report for December 2025.",
+        notes: ["PR reports moved to monthly archive."],
+        aliases: ["pr", "december", "2025"],
+        categoryOrder: 30
+      },
+      {
+        id: "pr_nov_2025",
+        title: "November 2025",
+        fullTitle: "PR - November 2025",
+        group: "PR",
+        icon: "fas fa-external-link-alt",
+        url: "https://releasd.com/pages/t4CYzQCj9Iisu39znAigsPwr1U_DAdioTTLqyWacTXg=",
+        type: "External PR Report",
+        access: "External Link",
+        status: [],
+        lastUpdated: "2025-11-30",
+        tags: ["pr", "november 2025", "external"],
+        description: "Monthly external PR report for November 2025.",
+        notes: ["PR reports moved to monthly archive."],
+        aliases: ["pr", "november", "2025"],
+        categoryOrder: 31
+      },
+      {
+        id: "pr_oct_2025",
+        title: "October 2025",
+        fullTitle: "PR - October 2025",
+        group: "PR",
+        icon: "fas fa-external-link-alt",
+        url: "https://releasd.com/pages/zVOCTfbXRKfEA1-C4opyTZzsFjX_blQzZYgAveIVRY8=",
+        type: "External PR Report",
+        access: "External Link",
+        status: [],
+        lastUpdated: "2025-10-31",
+        tags: ["pr", "october 2025", "external"],
+        description: "Monthly external PR report for October 2025.",
+        notes: ["PR reports moved to monthly archive."],
+        aliases: ["pr", "october", "2025"],
+        categoryOrder: 32
+      },
+      {
+        id: "pr_sep_2025",
+        title: "September 2025",
+        fullTitle: "PR - September 2025",
+        group: "PR",
+        icon: "fas fa-external-link-alt",
+        url: "https://releasd.com/pages/8hZHCNiZ8pxtySolMfreXtPrUOMlTC98yChNvSzF6Xo=",
+        type: "External PR Report",
+        access: "External Link",
+        status: [],
+        lastUpdated: "2025-09-30",
+        tags: ["pr", "september 2025", "external"],
+        description: "Monthly external PR report for September 2025.",
+        notes: ["PR reports moved to monthly archive."],
+        aliases: ["pr", "september", "2025"],
+        categoryOrder: 33
+      },
+      {
+        id: "ppc_google",
         title: "Google",
-        url: "https://lookerstudio.google.com/embed/reporting/86af7bb7-cc68-4801-aa8f-ad64672f6971/page/p_7f2aw8gugd/"
+        fullTitle: "PPC - Google",
+        group: "PPC",
+        icon: "fab fa-google",
+        url: "https://lookerstudio.google.com/embed/reporting/86af7bb7-cc68-4801-aa8f-ad64672f6971/page/p_7f2aw8gugd/",
+        type: "Looker Studio",
+        access: "Public",
+        status: [],
+        lastUpdated: "2026-03-17",
+        tags: ["ppc", "google", "paid", "ads"],
+        description: "Google paid media performance reporting.",
+        notes: ["Compare with Bing or Campaign Source/Conversions for paid media analysis."],
+        aliases: ["ppc", "google", "paid"],
+        categoryOrder: 34
       },
-      "ppc-bing": {
+      {
+        id: "ppc_bing",
         title: "Bing",
-        url: "https://lookerstudio.google.com/embed/reporting/86af7bb7-cc68-4801-aa8f-ad64672f6971/page/p_r3xp7adzqd/"
+        fullTitle: "PPC - Bing",
+        group: "PPC",
+        icon: "fab fa-microsoft",
+        url: "https://lookerstudio.google.com/embed/reporting/86af7bb7-cc68-4801-aa8f-ad64672f6971/page/p_r3xp7adzqd/",
+        type: "Looker Studio",
+        access: "Public",
+        status: [],
+        lastUpdated: "2026-03-17",
+        tags: ["ppc", "bing", "paid", "ads"],
+        description: "Bing paid media performance reporting.",
+        notes: ["Useful to compare against Google paid reporting."],
+        aliases: ["ppc", "bing", "paid"],
+        categoryOrder: 35
       },
-      "ppc-campaign-source-conv": {
+      {
+        id: "ppc_campaign_source",
         title: "Campaign Source/Conversions",
-        url: "https://lookerstudio.google.com/embed/reporting/7a8ab4f6-03ea-4f23-817b-5573bf272e87/page/p_htt9lurfld/"
+        fullTitle: "PPC - Campaign Source/Conversions",
+        group: "PPC",
+        icon: "fas fa-bullseye",
+        url: "https://lookerstudio.google.com/embed/reporting/7a8ab4f6-03ea-4f23-817b-5573bf272e87/page/p_htt9lurfld/",
+        type: "Looker Studio",
+        access: "Public",
+        status: [],
+        lastUpdated: "2026-03-17",
+        tags: ["ppc", "campaign", "conversions", "paid"],
+        description: "Campaign source and conversion reporting across paid media activity.",
+        notes: [],
+        aliases: ["ppc", "campaign", "conversions", "paid"],
+        categoryOrder: 36
       },
-
-      // Social
-      "social-organic-linkedin": {
+      {
+        id: "organic_linkedin",
         title: "Organic - LinkedIn",
-        url: "https://lookerstudio.google.com/embed/reporting/2b663a8e-07ef-4f74-9f4f-9ea7ea9b1c6b/page/p_6wnd69nf9c"
+        fullTitle: "Social Media - Organic LinkedIn",
+        group: "Social Media",
+        icon: "fas fa-leaf",
+        url: "https://lookerstudio.google.com/embed/reporting/2b663a8e-07ef-4f74-9f4f-9ea7ea9b1c6b/page/p_6wnd69nf9c",
+        type: "Looker Studio",
+        access: "Public",
+        status: [],
+        lastUpdated: "2026-03-17",
+        tags: ["organic", "linkedin", "social", "social media"],
+        description: "Organic LinkedIn performance reporting.",
+        notes: ["Compare with Paid - LinkedIn as part of Organic vs Paid preset."],
+        aliases: ["organic", "linkedin", "social"],
+        categoryOrder: 37
       },
-      "social-paid-linkedin": {
+      {
+        id: "paid_linkedin",
         title: "Paid - LinkedIn",
-        url: "https://lookerstudio.google.com/embed/reporting/86af7bb7-cc68-4801-aa8f-ad64672f6971/page/p_6nz7z4i1fd/"
+        fullTitle: "Social Media - Paid LinkedIn",
+        group: "Social Media",
+        icon: "fab fa-linkedin",
+        url: "https://lookerstudio.google.com/embed/reporting/86af7bb7-cc68-4801-aa8f-ad64672f6971/page/p_6nz7z4i1fd/",
+        type: "Looker Studio",
+        access: "Public",
+        status: [],
+        lastUpdated: "2026-03-17",
+        tags: ["paid", "linkedin", "social", "social media"],
+        description: "Paid LinkedIn performance reporting.",
+        notes: ["Compare with Organic - LinkedIn for channel mix analysis."],
+        aliases: ["paid", "linkedin", "social", "ppc"],
+        categoryOrder: 38
       },
-      "social-paid-meta": {
+      {
+        id: "paid_meta",
         title: "Paid - Meta",
-        url: "https://lookerstudio.google.com/embed/reporting/86af7bb7-cc68-4801-aa8f-ad64672f6971/page/p_5ma47ri1fd/"
+        fullTitle: "Social Media - Paid Meta",
+        group: "Social Media",
+        icon: "fab fa-facebook",
+        url: "https://lookerstudio.google.com/embed/reporting/86af7bb7-cc68-4801-aa8f-ad64672f6971/page/p_5ma47ri1fd/",
+        type: "Looker Studio",
+        access: "Public",
+        status: ["BETA"],
+        lastUpdated: "2026-03-17",
+        tags: ["paid", "meta", "social", "social media"],
+        description: "Paid Meta campaign reporting for social advertising activity.",
+        notes: ["Marked as Beta in the portal UI."],
+        aliases: ["paid", "meta", "social", "ppc"],
+        categoryOrder: 39
       },
-
-      // Marketing Funnel
-      "funnel-am-fy26": {
+      {
+        id: "funnel_am_fy26",
         title: "AM FY26",
-        url: "https://lookerstudio.google.com/embed/reporting/f406a0d1-eb9f-4716-a181-ea0de09e00cf/page/p_jlgy4fn6md"
+        fullTitle: "Marketing Funnel - AM FY26",
+        group: "Marketing Funnel",
+        icon: "fas fa-filter",
+        url: "https://lookerstudio.google.com/embed/reporting/f406a0d1-eb9f-4716-a181-ea0de09e00cf/page/p_jlgy4fn6md",
+        type: "Looker Studio",
+        access: "Public",
+        status: [],
+        lastUpdated: "2026-03-17",
+        tags: ["funnel", "am", "fy26"],
+        description: "Marketing funnel reporting for AM FY26.",
+        notes: ["Compare with AM FY25 for period analysis."],
+        aliases: ["funnel", "am", "fy26"],
+        categoryOrder: 40
       },
-      "funnel-visnet-fy26": {
+      {
+        id: "funnel_visnet_fy26",
         title: "VisNet FY26",
-        url: "https://lookerstudio.google.com/embed/reporting/50d90de8-38a3-4ea3-bd8f-16a7d5313347/page/p_jlgy4fn6md"
+        fullTitle: "Marketing Funnel - VisNet FY26",
+        group: "Marketing Funnel",
+        icon: "fas fa-filter",
+        url: "https://lookerstudio.google.com/embed/reporting/50d90de8-38a3-4ea3-bd8f-16a7d5313347/page/p_jlgy4fn6md",
+        type: "Looker Studio",
+        access: "Public",
+        status: [],
+        lastUpdated: "2026-03-17",
+        tags: ["funnel", "visnet", "fy26"],
+        description: "Marketing funnel reporting for VisNet FY26.",
+        notes: ["Compare with VisNet FY25 for period analysis."],
+        aliases: ["funnel", "visnet", "fy26"],
+        categoryOrder: 41
       },
-      "funnel-am-fy25": {
+      {
+        id: "funnel_am_fy25",
         title: "AM FY25",
-        url: "https://lookerstudio.google.com/embed/reporting/91f1d804-484f-4654-9b93-79d68686a4c3/page/p_jlgy4fn6md"
+        fullTitle: "Marketing Funnel - AM FY25",
+        group: "Marketing Funnel",
+        icon: "fas fa-filter",
+        url: "https://lookerstudio.google.com/embed/reporting/91f1d804-484f-4654-9b93-79d68686a4c3/page/p_jlgy4fn6md",
+        type: "Looker Studio",
+        access: "Public",
+        status: [],
+        lastUpdated: "2026-03-17",
+        tags: ["funnel", "am", "fy25"],
+        description: "Marketing funnel reporting for AM FY25.",
+        notes: [],
+        aliases: ["funnel", "am", "fy25"],
+        categoryOrder: 42
       },
-      "funnel-visnet-fy25": {
+      {
+        id: "funnel_visnet_fy25",
         title: "VisNet FY25",
-        url: "https://lookerstudio.google.com/embed/reporting/cd828cdc-0d10-4af8-b80c-046bf2db6df3/page/p_jlgy4fn6md"
+        fullTitle: "Marketing Funnel - VisNet FY25",
+        group: "Marketing Funnel",
+        icon: "fas fa-filter",
+        url: "https://lookerstudio.google.com/embed/reporting/cd828cdc-0d10-4af8-b80c-046bf2db6df3/page/p_jlgy4fn6md",
+        type: "Looker Studio",
+        access: "Public",
+        status: [],
+        lastUpdated: "2026-03-17",
+        tags: ["funnel", "visnet", "fy25"],
+        description: "Marketing funnel reporting for VisNet FY25.",
+        notes: [],
+        aliases: ["funnel", "visnet", "fy25"],
+        categoryOrder: 43
       },
-
-      // AI Traffic
-      "ai-traffic": {
+      {
+        id: "ai_traffic",
         title: "AI Traffic",
-        url: "https://lookerstudio.google.com/embed/reporting/de1c4d23-9d77-42f2-9f64-f0082b4b1d46/page/CJ6aD"
+        fullTitle: "AI Traffic",
+        group: "Special Reports",
+        icon: "fas fa-microchip",
+        url: "https://lookerstudio.google.com/embed/reporting/de1c4d23-9d77-42f2-9f64-f0082b4b1d46/page/CJ6aD",
+        type: "Looker Studio",
+        access: "Public",
+        status: ["BETA"],
+        lastUpdated: "2026-03-17",
+        tags: ["ai", "traffic", "beta"],
+        description: "AI-related traffic reporting. Shown as Beta due to evolving reporting use case.",
+        notes: ["Beta report: interpretation may evolve as the reporting definition matures."],
+        aliases: ["ai", "traffic", "beta"],
+        categoryOrder: 44
       },
+      {
+        id: "feathr_report",
+        title: "Enlit Banner Campaign",
+        fullTitle: "Feathr Report - Enlit Banner Campaign",
+        group: "Special Reports",
+        icon: "fas fa-chart-line",
+        url: "https://l.feathr.co/v1/reports/c/6926ab6e96f726e6027bba6b?s=2025-11-28&e=2025-12-19&m=l&c=eyJhdHRyaWJ1dGlvbk1vZGVsIjoiZmlyc3RfdG91Y2giLCJpbmNsdWRlQWN0aXZpdHlCcmVha2Rvd24iOnRydWUsImluY2x1ZGVBY3Rpdml0eVN1bW1hcnkiOnRydWUsImluY2x1ZGVBZEFjdGl2aXR5Ijp0cnVlLCJpbmNsdWRlQ29udmVyc2lvbnNUYWJsZSI6ZmFsc2UsImluY2x1ZGVDcmVhdGl2ZXNUYWJsZSI6dHJ1ZSwiaW5jbHVkZURhaWx5U3RhdHNUYWJsZSI6ZmFsc2UsImluY2x1ZGVFbWFpbEFjdGl2aXR5IjpmYWxzZSwiaWluY2x1ZGVOZWF0bWFwIjp0cnVlLCJpbmNsdWRlTGVhZHNTdW1tYXJ5IjpmYWxzZSwiaW5jbHVkZUZvcm1TdWJtaXNzaW9uc1RhYmxlIjpmYWxzZSwiaW5jbHVkZVBhZ2VBY3Rpdml0eSI6ZmFsc2UsImluY2x1ZGVST0kiOmZhbHNlLCJpbmNsdWRlU3BlbmRQZXJmb3JtYW5jZSI6ZmFsc2UsImluY2x1ZGVUcmFmZmljQnJlYWtkb3duIjp0cnVlLCJpbmNsdWRlTW9uZXRpemF0aW9uUk9JIjpmYWxzZSwiaW5jbHVkZUxpbmtDbGlja3NUYWJsZSI6dHJ1ZSwiaW5jbHVkZUNhbXBhaWduRW5nYWdlbWVudCI6ZmFsc2V9",
+        type: "External Report",
+        access: "External Link",
+        status: [],
+        lastUpdated: "2025-12-19",
+        tags: ["feathr", "campaign", "banner", "external"],
+        description: "External campaign report for Enlit Banner Campaign activity.",
+        notes: [],
+        aliases: ["feathr", "banner", "campaign"],
+        categoryOrder: 45
+      }
+    ];
 
-      // External: Feathr report
-      "enlit-banner-campaign": {
-        title: "Feathr Report",
-        url: "https://l.feathr.co/v1/reports/c/6926ab6e96f726e6027bba6b?s=2025-11-28&e=2025-12-19&m=l&c=eyJhdHRyaWJ1dGlvbk1vZGVsIjoiZmlyc3RfdG91Y2giLCJpbmNsdWRlQWN0aXZpdHlCcmVha2Rvd24iOnRydWUsImluY2x1ZGVEY3Rpdml0eVN1bW1hcnkiOnRydWUsImluY2x1ZGVBZEFjdGl2aXR5Ijp0cnVlLCJpbmNsdWRlQ29udmVyc2lvbnNUYWJsZSI6ZmFsc2UsImluY2x1ZGVDcmVhdGl2ZXNUYWJsZSI6dHJ1ZSwiaW5jbHVkZURhaWx5U3RhdHNUYWJsZSI6ZmFsc2UsImluY2x1ZGVEbWFpbEFjdGl2aXR5IjpmYWxzZSwiaW5jbHVkZUhlYXRtYXAiOnRydWUsImluY2x1ZGVMZWFkc1N1bW1hcnkiOmZhbHNlLCJpbmNsdWRlRm9ybVN1Ym1pc3Npb25zVGFibGUiOmZhbHNlLCJpbmNsdWRlUGFnZUFjdGl2aXR5IjpmYWxzZSwiaW5jbHVkZVJPSSI6ZmFsc2UsImluY2x1ZGVTcGVuZFBlcmZvcm1hbmNlIjpmYWxzZSwiaW5jbHVkZVRyYWZmaWNCcmVha2Rvd24iOnRydWUsImluY2x1ZGVTb25ldGl6YXRpb25ST0kiOmZhbHNlLCJpbmNsdWRlTGlua0NsaWNrc1RhYmxlIjp0cnVlLCJpbmNsdWRlQ2FtcGFpZ25FbmdhZ2VtZW50IjpmYWxzZX0%3D"
+    const comparePresets = {
+      fy26_vs_fy25: { left: "mqls_fy26", right: "visnet_fy25" },
+      am_vs_visnet: { left: "am_fy26", right: "visnet_fy26" },
+      organic_vs_paid: { left: "organic_linkedin", right: "paid_linkedin" },
+      ea_vs_visnet_web: { left: "ea_ga", right: "visnet_ga" }
+    };
+
+    const state = {
+      currentReportId: null,
+      currentSlot: "left",
+      splitMode: false,
+      activeFrame: "left",
+      frames: {
+        left: { reportId: null, loadStart: null, timeoutId: null },
+        right: { reportId: null, loadStart: null, timeoutId: null }
       }
     };
 
-    function setDeepLink(reportId, useReplace = false) {
-      if (!reportId) return;
-      const url = new URL(window.location.href);
-      url.searchParams.set("report", reportId);
+    const STORAGE_KEYS = {
+      auth: "dashboardAuthTimeV3",
+      favs: "dashboardFavouritesV3",
+      recent: "dashboardRecentV3",
+      views: "dashboardViewsV3",
+      health: "dashboardHealthV3",
+      releaseSeen: "dashboardReleaseSeenV3"
+    };
 
-      if (useReplace) window.history.replaceState({ report: reportId }, "", url.toString());
-      else window.history.pushState({ report: reportId }, "", url.toString());
+    const els = {
+      authOverlay: document.getElementById("authOverlay"),
+      authPassword: document.getElementById("authPassword"),
+      authSubmitBtn: document.getElementById("authSubmitBtn"),
+      togglePasswordBtn: document.getElementById("togglePasswordBtn"),
+      authError: document.getElementById("authError"),
+
+      sidebar: document.getElementById("sidebar"),
+      toggleSidebarBtn: document.getElementById("toggleSidebarBtn"),
+      sidebarHideHandle: document.getElementById("sidebarHideHandle"),
+      showSidebarBtn: document.getElementById("showSidebarBtn"),
+      goHomeBtn: document.getElementById("goHomeBtn"),
+      toggleCompareBtn: document.getElementById("toggleCompareBtn"),
+      releaseNotesBtn: document.getElementById("releaseNotesBtn"),
+      toggleMetaBtn: document.getElementById("toggleMetaBtn"),
+      rightPanelMeta: document.getElementById("rightPanelMeta"),
+      metaHideHandle: document.getElementById("metaHideHandle"),
+      showMetaBtn: document.getElementById("showMetaBtn"),
+
+      menuSearchInput: document.getElementById("menuSearchInput"),
+      menuContainer: document.getElementById("menuContainer"),
+      searchEmptyState: document.getElementById("searchEmptyState"),
+      favouritesList: document.getElementById("favouritesList"),
+
+      currentReportPill: document.getElementById("currentReportPill"),
+      breadcrumbs: document.getElementById("breadcrumbs"),
+      bookmarkBtn: document.getElementById("bookmarkBtn"),
+      refreshBtn: document.getElementById("refreshBtn"),
+      resetViewBtn: document.getElementById("resetViewBtn"),
+      copyLinkBtn: document.getElementById("copyLinkBtn"),
+      openNewTabBtn: document.getElementById("openNewTabBtn"),
+      fullscreenBtn: document.getElementById("fullscreenBtn"),
+      printBtn: document.getElementById("printBtn"),
+
+      homeScreen: document.getElementById("homeScreen"),
+      reportScreen: document.getElementById("reportScreen"),
+      framesWrap: document.getElementById("framesWrap"),
+      compareToolbar: document.getElementById("compareToolbar"),
+
+      leftPanel: document.getElementById("leftPanel"),
+      rightPanel: document.getElementById("rightPanel"),
+      leftFrame: document.getElementById("reportFrame"),
+      rightFrame: document.getElementById("reportFrame2"),
+      leftSkeleton: document.getElementById("leftSkeleton"),
+      rightSkeleton: document.getElementById("rightSkeleton"),
+      leftErrorState: document.getElementById("leftErrorState"),
+      rightErrorState: document.getElementById("rightErrorState"),
+      leftLoadIndicator: document.getElementById("leftLoadIndicator"),
+      rightLoadIndicator: document.getElementById("rightLoadIndicator"),
+      leftFrameTitle: document.getElementById("leftFrameTitle"),
+      rightFrameTitle: document.getElementById("rightFrameTitle"),
+      leftFrameAccess: document.getElementById("leftFrameAccess"),
+      rightFrameAccess: document.getElementById("rightFrameAccess"),
+
+      comparePresetSelect: document.getElementById("comparePresetSelect"),
+      duplicateCurrentBtn: document.getElementById("duplicateCurrentBtn"),
+      swapFramesBtn: document.getElementById("swapFramesBtn"),
+      exitCompareBtn: document.getElementById("exitCompareBtn"),
+
+      metaSummary: document.getElementById("metaSummary"),
+      metaGrid: document.getElementById("metaGrid"),
+      reportNotes: document.getElementById("reportNotes"),
+      healthGrid: document.getElementById("healthGrid"),
+
+      tooltip: document.getElementById("tooltip"),
+      toastWrap: document.getElementById("toastWrap"),
+
+      releaseNotesModal: document.getElementById("releaseNotesModal"),
+      releaseNotesList: document.getElementById("releaseNotesList"),
+
+      homeFavourites: document.getElementById("homeFavourites"),
+      homeMostViewed: document.getElementById("homeMostViewed"),
+      homeRecentlyViewed: document.getElementById("homeRecentlyViewed"),
+      homeNotes: document.getElementById("homeNotes"),
+
+      statTotalReports: document.getElementById("statTotalReports"),
+      statFavourites: document.getElementById("statFavourites"),
+      statTopViews: document.getElementById("statTopViews"),
+      statRecent: document.getElementById("statRecent"),
+
+      homeOpenTopReportBtn: document.getElementById("homeOpenTopReportBtn"),
+      homeOpenRecentBtn: document.getElementById("homeOpenRecentBtn")
+    };
+
+    function getReportById(id) {
+      return reports.find(r => r.id === id) || null;
     }
 
-    function getDeepLinkReportId() {
-      const url = new URL(window.location.href);
-      return url.searchParams.get("report");
+    function saveJSON(key, value) {
+      localStorage.setItem(key, JSON.stringify(value));
     }
 
-    function highlightActiveButton(reportId) {
-      if (!reportId) return;
-
-      const buttons = document.querySelectorAll('.report-sidebar button');
-      buttons.forEach(btn => btn.classList.remove('active'));
-
-      const btn = document.querySelector(`.report-sidebar button[data-report-id="${reportId}"]`);
-      if (btn) {
-        btn.classList.add('active');
-
-        // If it's in a submenu, open its parent menu and close others
-        const parentMenu = btn.closest('.report-menu');
-        if (parentMenu) {
-          document.querySelectorAll('.report-menu').forEach(m => {
-            if (m !== parentMenu) m.classList.remove('open');
-          });
-          parentMenu.classList.add('open');
-        }
+    function getJSON(key, fallback) {
+      try {
+        const raw = localStorage.getItem(key);
+        return raw ? JSON.parse(raw) : fallback;
+      } catch {
+        return fallback;
       }
     }
 
-    function loadFromDeepLink() {
-      const reportId = getDeepLinkReportId();
-      if (!reportId) return false;
-
-      const entry = REPORTS[reportId];
-      if (!entry) return false;
-
-      reportLoadReport(entry.url, null, entry.title, reportId);
-      return true;
+    function getFavourites() {
+      return getJSON(STORAGE_KEYS.favs, []);
     }
 
-    window.addEventListener("popstate", () => {
-      loadFromDeepLink();
-    });
+    function setFavourites(ids) {
+      saveJSON(STORAGE_KEYS.favs, ids);
+      renderFavourites();
+      renderHome();
+      updateBookmarkButton();
+    }
 
-    function reportLoadById(reportId, button) {
-      const entry = REPORTS[reportId];
-      if (!entry) {
-        alert("Report not found: " + reportId);
+    function getViews() {
+      return getJSON(STORAGE_KEYS.views, {});
+    }
+
+    function incrementViews(reportId) {
+      const views = getViews();
+      views[reportId] = (views[reportId] || 0) + 1;
+      saveJSON(STORAGE_KEYS.views, views);
+      renderHome();
+    }
+
+    function getRecent() {
+      return getJSON(STORAGE_KEYS.recent, []);
+    }
+
+    function addRecent(reportId) {
+      let recent = getRecent().filter(id => id !== reportId);
+      recent.unshift(reportId);
+      recent = recent.slice(0, 12);
+      saveJSON(STORAGE_KEYS.recent, recent);
+      renderHome();
+    }
+
+    function getHealth() {
+      return getJSON(STORAGE_KEYS.health, {});
+    }
+
+    function updateHealth(reportId, patch) {
+      const health = getHealth();
+      const current = health[reportId] || {
+        views: 0,
+        lastSuccessfulLoad: null,
+        lastLoadMs: null,
+        avgLoadMs: null,
+        failedLoads: 0,
+        timedOutLoads: 0,
+        lastKnownStatus: "Unknown"
+      };
+      health[reportId] = { ...current, ...patch };
+      saveJSON(STORAGE_KEYS.health, health);
+      if (state.currentReportId === reportId) {
+        renderMetaPanel(reportId);
+      }
+    }
+
+    function createBadge(text, cls) {
+      return `<span class="badge ${cls}">${text}</span>`;
+    }
+
+    function renderStatusBadges(report) {
+      const badges = [];
+      if ((report.status || []).includes("NEW")) badges.push(createBadge("NEW", "new"));
+      if ((report.status || []).includes("UPDATED")) badges.push(createBadge("UPDATED", "updated"));
+      if ((report.status || []).includes("BETA")) badges.push(createBadge("BETA", "beta"));
+
+      const accessMap = {
+        "Public": createBadge("Public", "public"),
+        "Internal Access Required": createBadge("Internal Access", "internal"),
+        "Dynamics Login Required": createBadge("Dynamics Login", "dynamics"),
+        "External Link": createBadge("External", "external")
+      };
+      if (accessMap[report.access]) badges.push(accessMap[report.access]);
+
+      if (isStale(report.lastUpdated)) badges.push(createBadge("Stale Review", "stale"));
+      return badges.join("");
+    }
+
+    function isStale(dateString) {
+      if (!dateString) return false;
+      const updated = new Date(dateString);
+      const now = new Date();
+      const diffDays = (now - updated) / (1000 * 60 * 60 * 24);
+      return diffDays > 120;
+    }
+
+    function formatPrettyDate(dateString) {
+      if (!dateString) return "Not available";
+      const d = new Date(dateString);
+      return d.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+    }
+
+    function toast(title, message, type = "success", timeout = 2800) {
+      const iconMap = {
+        success: "fa-circle-check",
+        warning: "fa-triangle-exclamation",
+        error: "fa-circle-xmark"
+      };
+      const div = document.createElement("div");
+      div.className = `toast ${type}`;
+      div.innerHTML = `
+        <i class="fas ${iconMap[type] || iconMap.success}"></i>
+        <div>
+          <strong>${title}</strong>
+          <p>${message}</p>
+        </div>
+      `;
+      els.toastWrap.appendChild(div);
+      setTimeout(() => {
+        div.style.opacity = "0";
+        div.style.transform = "translateY(8px)";
+        setTimeout(() => div.remove(), 220);
+      }, timeout);
+    }
+
+    function showTooltip(text, x, y) {
+      els.tooltip.innerHTML = text;
+      els.tooltip.style.left = `${Math.min(window.innerWidth - 300, x + 14)}px`;
+      els.tooltip.style.top = `${Math.min(window.innerHeight - 120, y + 14)}px`;
+      els.tooltip.classList.add("visible");
+    }
+
+    function hideTooltip() {
+      els.tooltip.classList.remove("visible");
+    }
+
+    function normalise(str) {
+      return (str || "").toLowerCase().trim();
+    }
+
+    function scoreReport(report, query) {
+      const q = normalise(query);
+      if (!q) return 1;
+
+      let score = 0;
+      const haystacks = [
+        report.title,
+        report.fullTitle,
+        report.group,
+        report.description,
+        ...(report.tags || []),
+        ...(report.aliases || [])
+      ].map(normalise);
+
+      if (haystacks.some(v => v === q)) score += 100;
+      if (normalise(report.title).includes(q)) score += 40;
+      if (normalise(report.fullTitle).includes(q)) score += 35;
+      if (normalise(report.group).includes(q)) score += 20;
+
+      haystacks.forEach(v => {
+        if (v.includes(q)) score += 10;
+      });
+
+      if (aliasMap[q]) {
+        const expanded = aliasMap[q];
+        expanded.forEach(term => {
+          const t = normalise(term);
+          if (haystacks.some(v => v.includes(t))) score += 16;
+        });
+      }
+
+      const parts = q.split(/\s+/).filter(Boolean);
+      parts.forEach(p => {
+        haystacks.forEach(v => {
+          if (v.includes(p)) score += 5;
+        });
+      });
+
+      return score;
+    }
+
+    function filteredReports(searchValue = "") {
+      const q = normalise(searchValue);
+      let arr = [...reports];
+
+      if (!q) return arr;
+
+      if (["new", "updated", "beta"].includes(q)) {
+        return arr.filter(r => (r.status || []).includes(q.toUpperCase()));
+      }
+
+      arr = arr
+        .map(r => ({ ...r, _score: scoreReport(r, q) }))
+        .filter(r => r._score > 0)
+        .sort((a, b) => b._score - a._score || a.categoryOrder - b.categoryOrder);
+
+      return arr;
+    }
+
+    function groupReports(reportList) {
+      const grouped = {};
+      reportList.forEach(r => {
+        if (!grouped[r.group]) grouped[r.group] = [];
+        grouped[r.group].push(r);
+      });
+      return grouped;
+    }
+
+    function renderMenu(searchTerm = "") {
+      const list = filteredReports(searchTerm);
+      const grouped = groupReports(list);
+      const groupOrder = [
+        "MQLs & Key Insights",
+        "Lead Generation",
+        "VisNet Website",
+        "EA Website",
+        "Products / Solutions",
+        "SEO",
+        "Channels",
+        "PR",
+        "PPC",
+        "Social Media",
+        "Marketing Funnel",
+        "Special Reports"
+      ];
+
+      els.menuContainer.innerHTML = "";
+      els.searchEmptyState.classList.toggle("hidden", list.length !== 0);
+
+      groupOrder.forEach(groupName => {
+        if (!grouped[groupName]) return;
+
+        const wrap = document.createElement("div");
+        wrap.className = "menu-group"; /* closed by default */
+
+        wrap.innerHTML = `
+          <button class="menu-header" type="button">
+            <div class="menu-title">
+              <i class="fas fa-folder-open"></i>
+              <span>${groupName}</span>
+            </div>
+            <i class="fas fa-chevron-down"></i>
+          </button>
+          <div class="menu-items"></div>
+        `;
+
+        if (searchTerm.trim()) {
+          wrap.classList.add("open");
+        }
+
+        const items = wrap.querySelector(".menu-items");
+
+        grouped[groupName].forEach(report => {
+          const btn = document.createElement("button");
+          btn.className = "report-btn";
+          btn.type = "button";
+          btn.draggable = true;
+          btn.dataset.reportId = report.id;
+          btn.dataset.tooltip = `
+            <strong>${report.fullTitle}</strong><br>
+            ${report.description}<br><br>
+            <strong>Tags:</strong> ${(report.tags || []).slice(0,6).join(", ")}
+          `;
+
+          btn.innerHTML = `
+            <div class="report-btn-left">
+              <i class="${report.icon}"></i>
+              <span>${report.title}</span>
+            </div>
+            <div class="report-btn-meta">
+              ${renderStatusBadges(report)}
+            </div>
+          `;
+
+          btn.addEventListener("click", () => {
+            openReport(report.id, state.splitMode ? state.activeFrame : "left");
+          });
+
+          btn.addEventListener("dragstart", (e) => {
+            e.dataTransfer.setData("text/plain", report.id);
+          });
+
+          btn.addEventListener("mouseenter", e => showTooltip(btn.dataset.tooltip, e.clientX, e.clientY));
+          btn.addEventListener("mousemove", e => showTooltip(btn.dataset.tooltip, e.clientX, e.clientY));
+          btn.addEventListener("mouseleave", hideTooltip);
+
+          items.appendChild(btn);
+        });
+
+        wrap.querySelector(".menu-header").addEventListener("click", () => {
+          wrap.classList.toggle("open");
+        });
+
+        els.menuContainer.appendChild(wrap);
+      });
+
+      updateActiveMenuButtons();
+    }
+
+    function renderFavourites() {
+      const favs = getFavourites().map(getReportById).filter(Boolean);
+      els.favouritesList.innerHTML = "";
+
+      if (!favs.length) {
+        els.favouritesList.innerHTML = `
+          <div class="empty-state" style="padding:16px;">
+            <div style="font-size:12px;">No favourites yet. Open a report and click <strong>Bookmark</strong>.</div>
+          </div>
+        `;
         return;
       }
-      reportLoadReport(entry.url, button || null, entry.title, reportId);
-    }
 
-    // =========================
-    // Loading/error helpers
-    // =========================
-    function hideLoading() {
-      document.getElementById('loadingIndicator').style.display = 'none';
-    }
+      favs.slice(0, 6).forEach(report => {
+        const item = document.createElement("div");
+        item.className = "list-item";
+        item.innerHTML = `
+          <div class="list-item-left">
+            <i class="${report.icon}" style="color:#fff"></i>
+            <div style="min-width:0;">
+              <div class="list-item-title" style="color:#fff">${report.title}</div>
+              <div class="list-item-sub" style="color:#cbd7ff">${report.group}</div>
+            </div>
+          </div>
+          <div style="display:flex; gap:8px;">
+            <button class="chip" title="Open"><i class="fas fa-arrow-up-right-from-square"></i></button>
+            <button class="chip" title="Remove favourite"><i class="fas fa-xmark"></i></button>
+          </div>
+        `;
 
-    function reportShowErrorMessage() {
-      document.getElementById('reportErrorMessage').style.display = 'block';
-    }
+        const buttons = item.querySelectorAll("button");
+        buttons[0].addEventListener("click", () => openReport(report.id, "left"));
+        buttons[1].addEventListener("click", () => toggleFavourite(report.id));
 
-    // =========================
-    // Sidebar menu accordion (unchanged)
-    // =========================
-    document.querySelectorAll('.report-menu-header').forEach(header => {
-      header.addEventListener('click', () => {
-        const menu = header.parentElement;
-        const allMenus = document.querySelectorAll('.report-menu');
-        allMenus.forEach(m => {
-          if (m !== menu) m.classList.remove('open');
-        });
-        menu.classList.toggle('open');
+        els.favouritesList.appendChild(item);
       });
-    });
+    }
 
-    // =========================
-    // Search (same behavior as yours, but works with data-report-id too)
-    // =========================
-    document.getElementById('menuSearchInput').addEventListener('input', function () {
-      const searchValue = this.value.toLowerCase();
-      const buttons = document.querySelectorAll('.report-sidebar button');
-
-      buttons.forEach(btn => {
-        const text = btn.textContent.toLowerCase();
-        const parentMenu = btn.closest('.report-menu');
-        const isMatch = text.includes(searchValue);
-
-        btn.style.display = isMatch ? 'flex' : 'none';
-
-        if (parentMenu && parentMenu.classList.contains('report-menu')) {
-          const items = parentMenu.querySelectorAll('.report-menu-items button');
-          const anyVisible = [...items].some(i => i.style.display !== 'none');
-
-          parentMenu.style.display = anyVisible ? 'block' : 'none';
-          parentMenu.classList.toggle('open', anyVisible);
-        }
+    function renderReleaseNotes() {
+      els.releaseNotesList.innerHTML = "";
+      releaseNotes.forEach(note => {
+        const div = document.createElement("div");
+        const cls = note.type === "NEW" ? "note" : "note warning";
+        div.className = cls;
+        div.innerHTML = `
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
+            <strong style="color:var(--brand)">${note.title}</strong>
+            <span class="badge ${note.type === "NEW" ? "new" : "updated"}">${note.type}</span>
+          </div>
+          <div style="font-size:12px; color:#6c7896; margin:5px 0 7px;">${note.date}</div>
+          <div>${note.text}</div>
+        `;
+        els.releaseNotesList.appendChild(div);
       });
-    });
+    }
 
-    // =========================
-    // Split Screen Logic
-    // =========================
-    let splitMode = false;
-    let activeFrame = "left";
+    function renderHome() {
+      const favIds = getFavourites();
+      const favs = favIds.map(getReportById).filter(Boolean);
+      const recent = getRecent().map(getReportById).filter(Boolean);
+      const views = getViews();
+      const mostViewed = [...reports]
+        .map(r => ({ report: r, count: views[r.id] || 0 }))
+        .sort((a, b) => b.count - a.count)
+        .filter(x => x.count > 0)
+        .slice(0, 6);
 
-    const leftBtn = document.getElementById('leftControlBtn');
-    const rightBtn = document.getElementById('rightControlBtn');
-    const compareBtn = document.getElementById('toggleCompareBtn');
-    const resetBtn = document.getElementById('resetSplitBtn');
+      els.statTotalReports.textContent = reports.length;
+      els.statFavourites.textContent = favs.length;
+      els.statTopViews.textContent = mostViewed[0]?.count || 0;
+      els.statRecent.textContent = recent.length;
 
-    compareBtn.addEventListener('click', () => {
-      const container = document.getElementById('reportFramesContainer');
-      const frame2 = document.getElementById('reportFrame2');
-      splitMode = !splitMode;
+      renderHomeList(els.homeFavourites, favs.slice(0, 6), "No favourites yet.");
+      renderHomeList(els.homeRecentlyViewed, recent.slice(0, 6), "No recent reports yet.");
 
-      if (splitMode) {
-        container.classList.add('split');
-        frame2.style.display = 'block';
-        showControlButtons();
-        resetBtn.style.display = 'inline-block';
-        alert("✅ Split view enabled.\nClick 🔒 Locked to make that side active.");
+      if (!mostViewed.length) {
+        els.homeMostViewed.innerHTML = `<div class="empty-state">No view history yet. Open some reports to build usage analytics.</div>`;
       } else {
-        container.classList.remove('split');
-        frame2.style.display = 'none';
-        hideControlButtons();
-        resetBtn.style.display = 'none';
-      }
-    });
-
-    function showControlButtons() {
-      leftBtn.style.display = 'inline-block';
-      rightBtn.style.display = 'inline-block';
-      updateControlButtons();
-    }
-    function hideControlButtons() {
-      leftBtn.style.display = 'none';
-      rightBtn.style.display = 'none';
-    }
-
-    function updateControlButtons() {
-      if (activeFrame === "left") {
-        leftBtn.innerText = "🟢 Control";
-        leftBtn.classList.remove("locked");
-        rightBtn.innerText = "🔒 Locked";
-        rightBtn.classList.add("locked");
-      } else {
-        rightBtn.innerText = "🟢 Control";
-        rightBtn.classList.remove("locked");
-        leftBtn.innerText = "🔒 Locked";
-        leftBtn.classList.add("locked");
-      }
-    }
-
-    leftBtn.addEventListener('click', () => {
-      activeFrame = "left";
-      updateControlButtons();
-    });
-    rightBtn.addEventListener('click', () => {
-      activeFrame = "right";
-      updateControlButtons();
-    });
-
-    // === Reset Split View (keeps the active report)
-    resetBtn.addEventListener('click', () => {
-      const iframe1 = document.getElementById('reportFrame');
-      const iframe2 = document.getElementById('reportFrame2');
-      const container = document.getElementById('reportFramesContainer');
-
-      let currentReportUrl = activeFrame === "left" ? iframe1.src : iframe2.src;
-
-      iframe1.src = currentReportUrl;
-      iframe2.style.display = "none";
-      container.classList.remove("split");
-
-      leftBtn.style.display = "none";
-      rightBtn.style.display = "none";
-      resetBtn.style.display = "none";
-      splitMode = false;
-      activeFrame = "left";
-
-      alert("✅ Returned to single view (kept the active report).");
-    });
-
-    // =========================
-    // Unified report loader (split-aware) + deep link update
-    // =========================
-    function reportLoadReport(reportUrl, button, title, reportId) {
-      const iframe1 = document.getElementById('reportFrame');
-      const iframe2 = document.getElementById('reportFrame2');
-      const errorMessage = document.getElementById('reportErrorMessage');
-      const buttons = document.querySelectorAll('.report-sidebar button');
-
-      document.getElementById('loadingIndicator').style.display = 'block';
-      errorMessage.style.display = 'none';
-
-      if (splitMode) {
-        if (activeFrame === "left") iframe1.src = reportUrl;
-        else iframe2.src = reportUrl;
-      } else {
-        iframe1.src = reportUrl;
-      }
-
-      // Active styling
-      if (button) {
-        buttons.forEach(btn => btn.classList.remove('active'));
-        button.classList.add('active');
-      } else if (reportId) {
-        highlightActiveButton(reportId);
-      }
-
-      if (title) document.title = title;
-
-      // ✅ Update URL
-      if (reportId) setDeepLink(reportId);
-    }
-
-    // =========================
-    // Accessibility for feedback link
-    // =========================
-    document.getElementById('feedbackLink').addEventListener('keydown', function(e) {
-      if (e.key === 'Enter') this.click();
-    });
-
-    // =========================
-    // Auth + default deep link logic
-    // =========================
-    window.addEventListener('DOMContentLoaded', () => {
-      const lastAuthTime = localStorage.getItem('dashboardAuthTime');
-      const now = new Date().getTime();
-      const sixtyMinutes = 60 * 60 * 1000;
-
-      if (lastAuthTime && (now - parseInt(lastAuthTime) < sixtyMinutes)) {
-        document.getElementById('reportPasswordOverlay').style.display = 'none';
-      }
-
-      // ✅ Load deep link if present
-      const loaded = loadFromDeepLink();
-
-      // ✅ If no deep link, set default report param (without adding history entry)
-      if (!loaded) {
-        const defaultReportId = "training";
-        setDeepLink(defaultReportId, true);
-        highlightActiveButton(defaultReportId);
-      }
-    });
-
-    // =========================
-    // What's New Popup logic (unchanged, but uses deep link loader)
-    // =========================
-    document.addEventListener('DOMContentLoaded', () => {
-      const showUpdatesBtn = document.getElementById('showUpdatesBtn');
-      const updatesOverlay = document.getElementById('updatesOverlay');
-      const closeUpdatesBtn = document.getElementById('closeUpdatesBtn');
-
-      function showUpdates() {
-        updatesOverlay.style.display = 'flex';
-        localStorage.setItem('lastUpdatePopupShown', new Date().toDateString());
-      }
-
-      function hideUpdates() {
-        updatesOverlay.style.display = 'none';
-      }
-
-      if (showUpdatesBtn) showUpdatesBtn.addEventListener('click', showUpdates);
-      if (closeUpdatesBtn) closeUpdatesBtn.addEventListener('click', hideUpdates);
-      if (updatesOverlay) {
-        updatesOverlay.addEventListener('click', (e) => {
-          if (e.target === updatesOverlay) hideUpdates();
+        els.homeMostViewed.innerHTML = "";
+        mostViewed.forEach(({ report, count }) => {
+          els.homeMostViewed.appendChild(makeHomeItem(report, `Viewed ${count} time${count === 1 ? "" : "s"}`));
         });
       }
 
-      const lastShown = localStorage.getItem('lastUpdatePopupShown');
+      els.homeNotes.innerHTML = "";
+      const notes = [
+        "PR reports moved to monthly archive.",
+        "ROI dashboard requires Dynamics login.",
+        "Competitor Keyword Ranking Analysis added on 13 March 2026.",
+        "Use compare mode for AM vs VisNet and FY26 vs FY25 analysis."
+      ];
+      notes.forEach((n, i) => {
+        const div = document.createElement("div");
+        div.className = i === 1 ? "note warning" : "note";
+        div.textContent = n;
+        els.homeNotes.appendChild(div);
+      });
+    }
+
+    function renderHomeList(container, arr, emptyText) {
+      if (!arr.length) {
+        container.innerHTML = `<div class="empty-state">${emptyText}</div>`;
+        return;
+      }
+      container.innerHTML = "";
+      arr.forEach(report => container.appendChild(makeHomeItem(report, report.group)));
+    }
+
+    function makeHomeItem(report, subtitle) {
+      const item = document.createElement("div");
+      item.className = "list-item";
+      item.innerHTML = `
+        <div class="list-item-left">
+          <i class="${report.icon}" style="color:var(--brand)"></i>
+          <div style="min-width:0;">
+            <div class="list-item-title">${report.title}</div>
+            <div class="list-item-sub">${subtitle}</div>
+          </div>
+        </div>
+        <div>${renderStatusBadges(report)}</div>
+      `;
+      item.addEventListener("click", () => openReport(report.id, "left"));
+      return item;
+    }
+
+    function updateCurrentPill(report) {
+      if (!report) {
+        els.currentReportPill.innerHTML = `<i class="fas fa-house"></i><span>Home</span>`;
+        els.breadcrumbs.innerHTML = `<span>Home</span>`;
+        document.title = "Marketing Intelligence Portal";
+        return;
+      }
+
+      els.currentReportPill.innerHTML = `
+        <i class="${report.icon}"></i>
+        <span>${report.fullTitle}</span>
+      `;
+
+      els.breadcrumbs.innerHTML = `
+        <span>Home</span>
+        <i class="fas fa-chevron-right"></i>
+        <span>${report.group}</span>
+        <i class="fas fa-chevron-right"></i>
+        <span>${report.title}</span>
+      `;
+      document.title = report.fullTitle;
+    }
+
+    function updateBookmarkButton() {
+      const reportId = state.currentReportId;
+      const favs = getFavourites();
+      const isFav = reportId && favs.includes(reportId);
+      els.bookmarkBtn.innerHTML = isFav
+        ? `<i class="fas fa-star"></i> Bookmarked`
+        : `<i class="far fa-star"></i> Bookmark`;
+    }
+
+    function toggleFavourite(reportId) {
+      if (!reportId) return;
+      let favs = getFavourites();
+      if (favs.includes(reportId)) {
+        favs = favs.filter(id => id !== reportId);
+        toast("Removed from favourites", "The report has been removed from your pinned list.", "warning");
+      } else {
+        favs.unshift(reportId);
+        favs = [...new Set(favs)].slice(0, 12);
+        toast("Added to favourites", "The report has been pinned for faster access.", "success");
+      }
+      setFavourites(favs);
+    }
+
+    function showHome() {
+      els.homeScreen.style.display = "block";
+      els.reportScreen.classList.remove("visible");
+      state.currentReportId = null;
+      updateCurrentPill(null);
+      updateBookmarkButton();
+      clearMetaPanel();
+      const url = new URL(window.location.href);
+      url.searchParams.delete("report");
+      history.replaceState({}, "", url.toString());
+    }
+
+    function showReportScreen() {
+      els.homeScreen.style.display = "none";
+      els.reportScreen.classList.add("visible");
+    }
+
+    function updateActiveMenuButtons() {
+      document.querySelectorAll(".report-btn").forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.reportId === state.currentReportId);
+      });
+    }
+
+    function accessBadgeClass(access) {
+      switch (access) {
+        case "Public": return "public";
+        case "Internal Access Required": return "internal";
+        case "Dynamics Login Required": return "dynamics";
+        case "External Link": return "external";
+        default: return "internal";
+      }
+    }
+
+    function setFrameHeader(slot, report) {
+      const titleEl = slot === "left" ? els.leftFrameTitle : els.rightFrameTitle;
+      const accessEl = slot === "left" ? els.leftFrameAccess : els.rightFrameAccess;
+
+      if (!report) {
+        titleEl.textContent = slot === "left" ? "No report selected" : "Drop second report here";
+        accessEl.className = "badge internal";
+        accessEl.textContent = "Waiting";
+        return;
+      }
+
+      titleEl.textContent = report.fullTitle;
+      accessEl.className = `badge ${accessBadgeClass(report.access)}`;
+      accessEl.textContent = report.access;
+    }
+
+    function openReport(reportId, slot = "left") {
+      const report = getReportById(reportId);
+      if (!report) return;
+
+      showReportScreen();
+      state.currentReportId = reportId;
+      state.activeFrame = slot;
+      state.frames[slot].reportId = reportId;
+
+      if (slot === "right" && !state.splitMode) {
+        enableCompareMode();
+      }
+
+      const frame = slot === "left" ? els.leftFrame : els.rightFrame;
+      const panel = slot === "left" ? els.leftPanel : els.rightPanel;
+      const skeleton = slot === "left" ? els.leftSkeleton : els.rightSkeleton;
+      const errorState = slot === "left" ? els.leftErrorState : els.rightErrorState;
+      const loadIndicator = slot === "left" ? els.leftLoadIndicator : els.rightLoadIndicator;
+
+      panel.classList.remove("empty");
+      errorState.classList.remove("visible");
+      skeleton.classList.add("visible");
+      loadIndicator.classList.add("visible");
+
+      setFrameHeader(slot, report);
+      updateCurrentPill(report);
+      updateBookmarkButton();
+      updateActiveMenuButtons();
+
+      addRecent(reportId);
+      incrementViews(reportId);
+      renderMetaPanel(reportId);
+
+      const url = new URL(window.location.href);
+      url.searchParams.set("report", reportId);
+      history.replaceState({}, "", url.toString());
+
+      if (state.frames[slot].timeoutId) clearTimeout(state.frames[slot].timeoutId);
+      state.frames[slot].loadStart = performance.now();
+
+      state.frames[slot].timeoutId = setTimeout(() => {
+        skeleton.classList.remove("visible");
+        loadIndicator.classList.remove("visible");
+        errorState.classList.add("visible");
+        updateHealth(reportId, {
+          timedOutLoads: (getHealth()[reportId]?.timedOutLoads || 0) + 1,
+          lastKnownStatus: "Timeout / access restricted"
+        });
+        toast("Report timeout", "The report took too long to display. It may require access or may not allow embedding.", "warning", 4200);
+      }, 15000);
+
+      frame.src = report.url;
+    }
+
+    function handleFrameLoad(slot) {
+      const reportId = state.frames[slot].reportId;
+      const report = getReportById(reportId);
+      const skeleton = slot === "left" ? els.leftSkeleton : els.rightSkeleton;
+      const errorState = slot === "left" ? els.leftErrorState : els.rightErrorState;
+      const loadIndicator = slot === "left" ? els.leftLoadIndicator : els.rightLoadIndicator;
+
+      skeleton.classList.remove("visible");
+      errorState.classList.remove("visible");
+      loadIndicator.classList.remove("visible");
+
+      if (state.frames[slot].timeoutId) clearTimeout(state.frames[slot].timeoutId);
+
+      if (reportId) {
+        const ms = Math.round(performance.now() - (state.frames[slot].loadStart || performance.now()));
+        const old = getHealth()[reportId] || {};
+        const avg = old.avgLoadMs ? Math.round((old.avgLoadMs + ms) / 2) : ms;
+        updateHealth(reportId, {
+          lastSuccessfulLoad: new Date().toISOString(),
+          lastLoadMs: ms,
+          avgLoadMs: avg,
+          lastKnownStatus: "Loaded"
+        });
+        if (state.currentReportId === reportId) renderMetaPanel(reportId);
+      }
+
+      if (report && report.access === "Dynamics Login Required") {
+        toast("Dynamics access note", "This report needs existing access and an active Dynamics session in this browser.", "warning", 3600);
+      }
+    }
+
+    function handleFrameError(slot) {
+      const reportId = state.frames[slot].reportId;
+      const skeleton = slot === "left" ? els.leftSkeleton : els.rightSkeleton;
+      const errorState = slot === "left" ? els.leftErrorState : els.rightErrorState;
+      const loadIndicator = slot === "left" ? els.leftLoadIndicator : els.rightLoadIndicator;
+
+      skeleton.classList.remove("visible");
+      loadIndicator.classList.remove("visible");
+      errorState.classList.add("visible");
+
+      if (state.frames[slot].timeoutId) clearTimeout(state.frames[slot].timeoutId);
+
+      if (reportId) {
+        updateHealth(reportId, {
+          failedLoads: (getHealth()[reportId]?.failedLoads || 0) + 1,
+          lastKnownStatus: "Embed error / unavailable"
+        });
+        if (state.currentReportId === reportId) renderMetaPanel(reportId);
+      }
+    }
+
+    function renderMetaPanel(reportId) {
+      const report = getReportById(reportId);
+      if (!report) return clearMetaPanel();
+
+      const views = getViews()[reportId] || 0;
+      const recent = getRecent().includes(reportId);
+      const health = getHealth()[reportId] || {};
+
+      els.metaSummary.innerHTML = `
+        <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:10px; flex-wrap:wrap;">
+          <div>
+            <div style="font-size:18px; font-weight:800; color:var(--brand);">${report.fullTitle}</div>
+            <div style="font-size:13px; color:var(--muted); margin-top:4px;">${report.description}</div>
+          </div>
+          <div style="display:flex; gap:6px; flex-wrap:wrap;">${renderStatusBadges(report)}</div>
+        </div>
+        <div class="kpi-note">
+          <strong>Usage:</strong> ${views} view${views === 1 ? "" : "s"} on this browser ${recent ? "• Recently viewed" : ""}
+        </div>
+      `;
+
+      const meta = [
+        ["Title", report.title],
+        ["Group", report.group],
+        ["Type", report.type],
+        ["Access", report.access],
+        ["Status", (report.status || []).join(", ") || "Standard"],
+        ["Last Updated", formatPrettyDate(report.lastUpdated)],
+        ["Tags", (report.tags || []).join(", ")],
+        ["URL Type", report.url.includes("lookerstudio.google.com") ? "Embedded Looker Studio" : "External / restricted report"]
+      ];
+
+      els.metaGrid.innerHTML = meta.map(([label, value]) => `
+        <div class="meta-item">
+          <div class="meta-label">${label}</div>
+          <div class="meta-value">${value}</div>
+        </div>
+      `).join("");
+
+      const notes = [...(report.notes || [])];
+
+      if (report.access === "Dynamics Login Required") {
+        notes.unshift("This report depends on existing access and an active Dynamics browser session.");
+      }
+      if (report.access === "External Link") {
+        notes.unshift("This report is hosted externally and may behave differently from Looker Studio embeds.");
+      }
+      if (isStale(report.lastUpdated)) {
+        notes.unshift("This report metadata suggests it may need a freshness review.");
+      }
+
+      els.reportNotes.innerHTML = notes.length
+        ? notes.map((n, idx) => `<div class="note ${idx === 0 && report.access !== "Public" ? "warning" : ""}">${n}</div>`).join("")
+        : `<div class="empty-state">No admin notes for this report.</div>`;
+
+      const healthItems = [
+        ["Availability", health.lastKnownStatus || "Unknown"],
+        ["Last Successful Load", health.lastSuccessfulLoad ? new Date(health.lastSuccessfulLoad).toLocaleString("en-GB") : "No successful load recorded"],
+        ["Last Load Time", health.lastLoadMs ? `${health.lastLoadMs} ms` : "Not available"],
+        ["Average Load Time", health.avgLoadMs ? `${health.avgLoadMs} ms` : "Not available"],
+        ["Failed Loads", health.failedLoads || 0],
+        ["Timeouts", health.timedOutLoads || 0]
+      ];
+
+      els.healthGrid.innerHTML = healthItems.map(([label, value]) => `
+        <div class="meta-item">
+          <div class="meta-label">${label}</div>
+          <div class="meta-value">${value}</div>
+        </div>
+      `).join("");
+    }
+
+    function clearMetaPanel() {
+      els.metaSummary.innerHTML = `Select a report to see description, access notes, health details and recent activity.`;
+      els.metaGrid.innerHTML = "";
+      els.reportNotes.innerHTML = `<div class="empty-state">No report selected.</div>`;
+      els.healthGrid.innerHTML = "";
+    }
+
+    function enableCompareMode() {
+      state.splitMode = true;
+      els.framesWrap.classList.add("split");
+      els.rightPanel.classList.remove("hidden");
+      els.compareToolbar.style.display = "flex";
+      toast("Compare mode enabled", "Drag a report into the second compare slot or use a preset.", "success");
+    }
+
+    function disableCompareMode() {
+      state.splitMode = false;
+      els.framesWrap.classList.remove("split");
+      els.rightPanel.classList.add("hidden");
+      els.compareToolbar.style.display = "none";
+      state.frames.right.reportId = null;
+      els.rightFrame.src = "";
+      els.rightPanel.classList.add("empty");
+      setFrameHeader("right", null);
+      toast("Compare mode closed", "Returned to single-report view.", "warning");
+    }
+
+    function swapFrames() {
+      const leftId = state.frames.left.reportId;
+      const rightId = state.frames.right.reportId;
+      if (!leftId && !rightId) return;
+
+      state.frames.left.reportId = rightId;
+      state.frames.right.reportId = leftId;
+
+      const leftReport = getReportById(rightId);
+      const rightReport = getReportById(leftId);
+
+      if (leftReport) {
+        setFrameHeader("left", leftReport);
+        els.leftPanel.classList.remove("empty");
+        els.leftFrame.src = leftReport.url;
+      } else {
+        els.leftPanel.classList.add("empty");
+        els.leftFrame.src = "";
+        setFrameHeader("left", null);
+      }
+
+      if (rightReport) {
+        setFrameHeader("right", rightReport);
+        els.rightPanel.classList.remove("empty");
+        els.rightFrame.src = rightReport.url;
+      } else {
+        els.rightPanel.classList.add("empty");
+        els.rightFrame.src = "";
+        setFrameHeader("right", null);
+      }
+
+      toast("Panels swapped", "The left and right compare panels have been swapped.", "success");
+    }
+
+    function duplicateCurrentToRight() {
+      if (!state.currentReportId) {
+        toast("No report selected", "Open a report first, then duplicate it into the compare panel.", "warning");
+        return;
+      }
+      enableCompareMode();
+      openReport(state.currentReportId, "right");
+      toast("Duplicated", "The current report has been duplicated into the compare panel.", "success");
+    }
+
+    function applyComparePreset(key) {
+      const preset = comparePresets[key];
+      if (!preset) return;
+      enableCompareMode();
+      openReport(preset.left, "left");
+      setTimeout(() => openReport(preset.right, "right"), 100);
+      toast("Compare preset applied", "Preset reports have been loaded into compare mode.", "success");
+    }
+
+    function resetCurrentView() {
+      const reportId = state.currentReportId;
+      if (!reportId) return showHome();
+      const slot = state.activeFrame;
+      const report = getReportById(reportId);
+      if (!report) return;
+      const frame = slot === "left" ? els.leftFrame : els.rightFrame;
+      frame.src = report.url;
+      toast("View reset", "The report has been reset to its original saved URL.", "success");
+    }
+
+    function refreshCurrentView() {
+      const slot = state.activeFrame;
+      const frame = slot === "left" ? els.leftFrame : els.rightFrame;
+      if (!state.frames[slot].reportId) {
+        toast("Nothing to refresh", "No report is loaded in the active panel.", "warning");
+        return;
+      }
+      frame.src = frame.src;
+      toast("Refreshing report", "The current report is being reloaded.", "success");
+    }
+
+    function copyCurrentLink() {
+      const reportId = state.currentReportId;
+      const url = new URL(window.location.href);
+      if (reportId) url.searchParams.set("report", reportId);
+      navigator.clipboard.writeText(url.toString()).then(() => {
+        toast("Link copied", "A direct link to the selected report has been copied.", "success");
+      }).catch(() => {
+        toast("Copy failed", "The link could not be copied on this browser.", "error");
+      });
+    }
+
+    function openCurrentInNewTab() {
+      const slot = state.activeFrame;
+      const reportId = state.frames[slot].reportId || state.currentReportId;
+      const report = getReportById(reportId);
+      if (!report) {
+        toast("No report selected", "Please select a report first.", "warning");
+        return;
+      }
+      window.open(report.url, "_blank");
+    }
+
+    function openFullscreen() {
+      const elem = document.documentElement;
+      if (!document.fullscreenElement) {
+        elem.requestFullscreen?.();
+      } else {
+        document.exitFullscreen?.();
+      }
+    }
+
+    function printPage() {
+      window.print();
+    }
+
+    async function handleAuth() {
+      const input = els.authPassword.value;
+      const inputHash = await hashMessage(input);
+      if (inputHash === validHash) {
+        localStorage.setItem(STORAGE_KEYS.auth, Date.now().toString());
+        els.authOverlay.style.display = "none";
+        els.authError.classList.remove("visible");
+        toast("Access granted", "Welcome to the Marketing Intelligence Portal.", "success");
+        maybeShowReleaseNotesOnFirstView();
+      } else {
+        els.authError.classList.add("visible");
+        toast("Incorrect password", "Please try again with the correct dashboard password.", "error", 3800);
+      }
+    }
+
+    function maybeShowReleaseNotesOnFirstView() {
       const today = new Date().toDateString();
-
-      const checkLoginInterval = setInterval(() => {
-        const passwordOverlay = document.getElementById('reportPasswordOverlay');
-        if (passwordOverlay && passwordOverlay.style.display === 'none') {
-          clearInterval(checkLoginInterval);
-          if (lastShown !== today) {
-            setTimeout(showUpdates, 800);
-          }
-        }
-      }, 500);
-    });
-	  
-	  // =========================
-// Chatbot (LLM-assisted) - Frontend
-// =========================
-
-// IMPORTANT:
-// Your dashboard cannot read data/numbers inside the Looker Studio iframes (cross-origin).
-// This chatbot is designed to help users find/open reports and answer "how do I" questions.
-
-const CHAT_API_URL = "http://127.0.0.1:3000/api/dashboard-chat"; 
-// If your backend is on another domain, replace with full URL like:
-// const CHAT_API_URL = "https://your-backend-domain.com/api/dashboard-chat";
-
-const chatbotFab = document.getElementById("chatbotFab");
-const chatbotPanel = document.getElementById("chatbotPanel");
-const chatbotCloseBtn = document.getElementById("chatbotCloseBtn");
-const chatbotMessages = document.getElementById("chatbotMessages");
-const chatbotInput = document.getElementById("chatbotInput");
-const chatbotSendBtn = document.getElementById("chatbotSendBtn");
-
-function chatAddMsg(role, text) {
-  const wrap = document.createElement("div");
-  wrap.className = `chat-msg ${role}`;
-  const bubble = document.createElement("div");
-  bubble.className = "chat-bubble";
-  bubble.textContent = text;
-  wrap.appendChild(bubble);
-  chatbotMessages.appendChild(wrap);
-  chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
-}
-
-function chatOpen() {
-  chatbotPanel.classList.remove("chatbot-hidden");
-  chatbotInput.focus();
-
-  if (chatbotMessages.childElementCount === 0) {
-    chatAddMsg("bot", "Hi! Ask me where a report is, e.g.\n- Open AI Traffic\n- Where is SEO Health Score?\n- Show PPC Google\n\nI can also explain Compare mode.");
-  }
-}
-function chatClose() {
-  chatbotPanel.classList.add("chatbot-hidden");
-}
-
-chatbotFab.addEventListener("click", chatOpen);
-chatbotCloseBtn.addEventListener("click", chatClose);
-
-async function chatSend() {
-  const q = (chatbotInput.value || "").trim();
-  if (!q) return;
-
-  chatAddMsg("user", q);
-  chatbotInput.value = "";
-
-  // show temporary "thinking" message
-  chatAddMsg("bot", "Thinking...");
-
-  try {
-    // Send the report list to the server (so the LLM knows what reports exist)
-    const res = await fetch(CHAT_API_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        question: q,
-        reports: REPORTS, // you already have REPORTS ✅
-        // optional extra context:
-        splitMode: splitMode,
-        activeFrame: activeFrame
-      })
-    });
-
-    if (!res.ok) throw new Error("Server returned " + res.status);
-
-    const data = await res.json();
-
-    // Remove the "Thinking..." bubble (last bot msg)
-    chatbotMessages.removeChild(chatbotMessages.lastChild);
-
-    if (data.reply) chatAddMsg("bot", data.reply);
-
-    // If LLM says "navigate", load the report
-    if (data.intent === "navigate" && data.reportId) {
-      // This uses your existing function ✅
-      reportLoadById(data.reportId, null);
+      const seen = localStorage.getItem(STORAGE_KEYS.releaseSeen);
+      if (seen !== today) {
+        setTimeout(() => {
+          openModal("releaseNotesModal");
+          localStorage.setItem(STORAGE_KEYS.releaseSeen, today);
+        }, 700);
+      }
     }
 
-  } catch (err) {
-    chatbotMessages.removeChild(chatbotMessages.lastChild);
-    chatAddMsg("bot", "Sorry—chat service is unavailable right now.");
-    console.error(err);
-  }
+    function checkAuthSession() {
+      const lastAuthTime = localStorage.getItem(STORAGE_KEYS.auth);
+      const now = Date.now();
+      const sixtyMinutes = 60 * 60 * 1000;
+      if (lastAuthTime && (now - parseInt(lastAuthTime, 10) < sixtyMinutes)) {
+        els.authOverlay.style.display = "none";
+        maybeShowReleaseNotesOnFirstView();
+      }
+    }
+
+    function openModal(id) {
+      document.getElementById(id)?.classList.add("visible");
+    }
+
+    function closeModal(id) {
+      document.getElementById(id)?.classList.remove("visible");
+    }
+
+    function bindDropzones() {
+      document.querySelectorAll(".frame-panel").forEach(panel => {
+        panel.addEventListener("dragover", e => {
+          e.preventDefault();
+          panel.classList.add("drag-over");
+        });
+        panel.addEventListener("dragleave", () => panel.classList.remove("drag-over"));
+        panel.addEventListener("drop", e => {
+          e.preventDefault();
+          panel.classList.remove("drag-over");
+          const reportId = e.dataTransfer.getData("text/plain");
+          const slot = panel.dataset.slot;
+          if (reportId) {
+            if (slot === "right" && !state.splitMode) enableCompareMode();
+            openReport(reportId, slot);
+          }
+        });
+      });
+    }
+
+    function setSidebarCollapsed(collapsed) {
+  document.body.classList.toggle("sidebar-collapsed", collapsed);
+  setTimeout(syncFloatingHandles, 20);
 }
 
-chatbotSendBtn.addEventListener("click", chatSend);
-chatbotInput.addEventListener("keydown", (e) => {
-  if (e.key === "Enter") chatSend();
-});
+function setMetaCollapsed(collapsed) {
+  document.body.classList.toggle("meta-collapsed", collapsed);
+  setTimeout(syncFloatingHandles, 20);
+}
 
-	  
+    function initTopButtons() {
+      els.toggleSidebarBtn.addEventListener("click", () => {
+        setSidebarCollapsed(!document.body.classList.contains("sidebar-collapsed"));
+      });
+      els.sidebarHideHandle.addEventListener("click", () => setSidebarCollapsed(true));
+      els.showSidebarBtn.addEventListener("click", () => setSidebarCollapsed(false));
+
+      els.goHomeBtn.addEventListener("click", showHome);
+      els.toggleCompareBtn.addEventListener("click", () => {
+        if (state.splitMode) disableCompareMode();
+        else enableCompareMode();
+      });
+      els.releaseNotesBtn.addEventListener("click", () => openModal("releaseNotesModal"));
+      els.toggleMetaBtn.addEventListener("click", () => {
+        setMetaCollapsed(!document.body.classList.contains("meta-collapsed"));
+      });
+      els.metaHideHandle.addEventListener("click", () => setMetaCollapsed(true));
+      els.showMetaBtn.addEventListener("click", () => setMetaCollapsed(false));
+
+      els.bookmarkBtn.addEventListener("click", () => {
+        if (!state.currentReportId) {
+          toast("No report selected", "Open a report first to bookmark it.", "warning");
+          return;
+        }
+        toggleFavourite(state.currentReportId);
+      });
+      els.refreshBtn.addEventListener("click", refreshCurrentView);
+      els.resetViewBtn.addEventListener("click", resetCurrentView);
+      els.copyLinkBtn.addEventListener("click", copyCurrentLink);
+      els.openNewTabBtn.addEventListener("click", openCurrentInNewTab);
+      els.fullscreenBtn.addEventListener("click", openFullscreen);
+      els.printBtn.addEventListener("click", printPage);
+
+      els.comparePresetSelect.addEventListener("change", e => {
+        if (e.target.value) applyComparePreset(e.target.value);
+      });
+      els.duplicateCurrentBtn.addEventListener("click", duplicateCurrentToRight);
+      els.swapFramesBtn.addEventListener("click", swapFrames);
+      els.exitCompareBtn.addEventListener("click", disableCompareMode);
+
+      els.homeOpenTopReportBtn.addEventListener("click", () => {
+        const views = getViews();
+        const top = [...reports]
+          .map(r => ({ report: r, count: views[r.id] || 0 }))
+          .sort((a,b) => b.count - a.count)[0];
+        if (top?.report) openReport(top.report.id, "left");
+        else openReport("mqls_fy26", "left");
+      });
+
+      els.homeOpenRecentBtn.addEventListener("click", () => {
+        const recent = getRecent()[0];
+        if (recent) openReport(recent, "left");
+        else toast("No recent report", "You have not opened any reports yet.", "warning");
+      });
+    }
+
+    function initSearch() {
+      els.menuSearchInput.addEventListener("input", e => {
+        renderMenu(e.target.value);
+      });
+
+      document.querySelectorAll(".chip[data-alias]").forEach(chip => {
+        chip.addEventListener("click", () => {
+          els.menuSearchInput.value = chip.dataset.alias;
+          renderMenu(chip.dataset.alias);
+        });
+      });
+
+      document.querySelectorAll(".chip[data-filter]").forEach(chip => {
+        chip.addEventListener("click", () => {
+          els.menuSearchInput.value = chip.dataset.filter;
+          renderMenu(chip.dataset.filter);
+        });
+      });
+    }
+
+    function initModals() {
+      document.querySelectorAll("[data-close-modal]").forEach(btn => {
+        btn.addEventListener("click", () => closeModal(btn.dataset.closeModal));
+      });
+
+      [els.releaseNotesModal].forEach(modal => {
+        modal.addEventListener("click", e => {
+          if (e.target === modal) modal.classList.remove("visible");
+        });
+      });
+    }
+
+    function initAuthUI() {
+      els.authSubmitBtn.addEventListener("click", handleAuth);
+      els.authPassword.addEventListener("keydown", e => {
+        els.authError.classList.remove("visible");
+        if (e.key === "Enter") handleAuth();
+      });
+      els.authPassword.addEventListener("input", () => {
+        els.authError.classList.remove("visible");
+      });
+      els.togglePasswordBtn.addEventListener("click", () => {
+        const isPassword = els.authPassword.type === "password";
+        els.authPassword.type = isPassword ? "text" : "password";
+        els.togglePasswordBtn.innerHTML = `<i class="fas ${isPassword ? "fa-eye-slash" : "fa-eye"}"></i>`;
+      });
+    }
+
+    function initFrameEvents() {
+      els.leftFrame.addEventListener("load", () => handleFrameLoad("left"));
+      els.rightFrame.addEventListener("load", () => handleFrameLoad("right"));
+
+      els.leftFrame.addEventListener("error", () => handleFrameError("left"));
+      els.rightFrame.addEventListener("error", () => handleFrameError("right"));
+    }
+
+    function loadReportFromUrl() {
+      const url = new URL(window.location.href);
+      const reportId = url.searchParams.get("report");
+      if (reportId && getReportById(reportId)) {
+        openReport(reportId, "left");
+      } else {
+        showHome();
+      }
+    }
+
+    function init() {
+      renderReleaseNotes();
+      renderMenu();
+      renderFavourites();
+      renderHome();
+      clearMetaPanel();
+      initTopButtons();
+      initSearch();
+      initModals();
+      initAuthUI();
+      initFrameEvents();
+      bindDropzones();
+      checkAuthSession();
+      loadReportFromUrl();
+syncFloatingHandles();
+window.addEventListener("resize", syncFloatingHandles);
+window.addEventListener("scroll", syncFloatingHandles, true);
+    }
+
+    window.addEventListener("DOMContentLoaded", init);
   </script>
-
-  <!-- === What's New Popup === -->
-  <div id="updatesOverlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:9998; justify-content:center; align-items:center;">
-    <div style="background:white; color:#220639; width:90%; max-width:600px; padding:22px; border-radius:10px; position:relative; text-align:left;">
-
-      <h2 style="margin-top:0; margin-bottom:4px; color:#220639; font-size:18px; display:flex; align-items:center; gap:8px;">
-        🔎 Long-Form Search Queries (AI-Assisted Searches)
-        <span style="
-          background:#FAB724;
-          color:#220639;
-          font-size:11px;
-          font-weight:800;
-          padding:3px 7px;
-          border-radius:12px;
-          letter-spacing:0.5px;
-        ">NEW</span>
-      </h2>
-
-      <div style="font-size:15px; font-weight:700; color:#00AAE4; margin-bottom:10px;">
-        19 January 2026
-      </div>
-
-      <p style="font-size:14.5px; line-height:1.6;">
-        Displays long-form Google search queries (7+ words), which are typically conversational and often
-        associated with AI or LLM-assisted searches. Useful for identifying AI-driven discovery and long-tail intent.
-      </p>
-
-      <p style="font-size:14.5px; line-height:1.6; margin-top:10px;">
-        <a href="#"
-           onclick="reportLoadById('ai-traffic', null); document.getElementById('updatesOverlay').style.display='none'; return false;"
-           style="color:#00AAE4; font-weight:700; text-decoration:underline;">
-          View this in the AI Traffic report →
-        </a>
-      </p>
-
-      <h2 style="margin-top:26px; margin-bottom:4px; color:#220639; font-size:18px;">
-        🤖 AI Traffic Updates
-      </h2>
-
-      <div style="font-size:15px; font-weight:700; color:#00AAE4; margin-bottom:10px;">
-        5 December 2025
-      </div>
-
-      <p style="font-size:14.5px; line-height:1.6;">
-        The dashboard now includes a dedicated <strong>AI Traffic</strong> report covering:
-      </p>
-
-      <ul style="font-size:14.5px; line-height:1.6; margin-top:5px; padding-left:18px;">
-        <li><strong>eatechnology.com</strong></li>
-        <li><strong>visnet.tech</strong></li>
-        <li><strong>training.eatechnology.com</strong></li>
-      </ul>
-
-      <button id="closeUpdatesBtn"
-        style="background:#220639; color:white; border:none; padding:8px 16px; border-radius:6px; cursor:pointer; font-weight:700; margin-top:14px;">
-        Close
-      </button>
-    </div>
-  </div>
 </body>
 </html>
