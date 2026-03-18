@@ -1424,7 +1424,7 @@ body.meta-collapsed .meta-hide-handle{
 }
   </style>
 </head>
-<body>
+<body class="meta-collapsed">
   <div class="app">
     <div class="auth-overlay" id="authOverlay">
       <div class="auth-card">
@@ -3412,6 +3412,10 @@ function syncFloatingHandlesAfterTransition() {
           state.selectedResourceId = file.id;
           renderResourceTable();
         });
+        const hoverText = `<strong>${file.name}</strong><br>${file.summary}`;
+        tr.addEventListener("mouseenter", (e) => showTooltip(hoverText, e.clientX, e.clientY));
+        tr.addEventListener("mousemove", (e) => showTooltip(hoverText, e.clientX, e.clientY));
+        tr.addEventListener("mouseleave", hideTooltip);
         tr.addEventListener("mouseenter", () => {
           els.resourceHoverBox.innerHTML = `<strong>${file.name}</strong>${file.summary}`;
         });
