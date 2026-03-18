@@ -669,6 +669,25 @@ body.sidebar-collapsed .sidebar-hide-handle{
       font-size:13px;
     }
 
+    .resource-hover-box{
+      margin:0 12px 12px;
+      border:1px solid #d9e6f8;
+      border-left:4px solid var(--accent);
+      border-radius:12px;
+      background:#f5f9ff;
+      padding:10px 12px;
+      font-size:13px;
+      color:#425072;
+      line-height:1.45;
+      min-height:64px;
+    }
+    .resource-hover-box strong{
+      display:block;
+      color:var(--brand);
+      margin-bottom:4px;
+      font-size:14px;
+    }
+
     .resource-table{
       width:100%;
       border-collapse:collapse;
@@ -1753,6 +1772,10 @@ body.meta-collapsed .meta-hide-handle{
                       <option value="name_asc">Name A-Z</option>
                     </select>
                   </div>
+                  <div class="resource-hover-box" id="resourceHoverBox">
+                    <strong>Hover any file</strong>
+                    The file summary will appear here for quick context before opening.
+                  </div>
                   <div style="overflow:auto; min-height:0;">
                     <table class="resource-table">
                       <thead>
@@ -2835,6 +2858,7 @@ function syncFloatingHandlesAfterTransition() {
       resourceSearchInput: document.getElementById("resourceSearchInput"),
       resourceSortSelect: document.getElementById("resourceSortSelect"),
       resourceTableBody: document.getElementById("resourceTableBody"),
+      resourceHoverBox: document.getElementById("resourceHoverBox"),
       openSelectedResourceBtn: document.getElementById("openSelectedResourceBtn")
     };
 
@@ -3392,6 +3416,17 @@ function syncFloatingHandlesAfterTransition() {
         tr.addEventListener("mouseenter", (e) => showTooltip(hoverText, e.clientX, e.clientY));
         tr.addEventListener("mousemove", (e) => showTooltip(hoverText, e.clientX, e.clientY));
         tr.addEventListener("mouseleave", hideTooltip);
+        tr.addEventListener("mouseenter", () => {
+          els.resourceHoverBox.innerHTML = `<strong>${file.name}</strong>${file.summary}`;
+        });
+        tr.addEventListener("mouseleave", () => {
+          const selected = resourceFiles.find(item => item.id === state.selectedResourceId);
+          if (selected) {
+            els.resourceHoverBox.innerHTML = `<strong>${selected.name}</strong>${selected.summary}`;
+          } else {
+            els.resourceHoverBox.innerHTML = `<strong>Hover any file</strong>The file summary will appear here for quick context before opening.`;
+          }
+        });
         tr.addEventListener("dblclick", () => window.open(file.url, "_blank"));
         els.resourceTableBody.appendChild(tr);
       });
@@ -3400,6 +3435,10 @@ function syncFloatingHandlesAfterTransition() {
     function renderResourcesPage() {
       renderResourceFolders();
       renderResourceTable();
+      const selected = resourceFiles.find(item => item.id === state.selectedResourceId);
+      if (selected) {
+        els.resourceHoverBox.innerHTML = `<strong>${selected.name}</strong>${selected.summary}`;
+      }
     }
 
     function showHome() {
