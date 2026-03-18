@@ -326,7 +326,7 @@ body.sidebar-collapsed .sidebar-hide-handle{
       padding:0 14px 0 40px;
       background:rgba(255,255,255,.12);
       color:#fff;
-      font-size:14px;
+      font-size:11px;
     }
     .search-wrap input::placeholder{color:rgba(255,255,255,.7)}
     .search-wrap i{
@@ -360,7 +360,7 @@ body.sidebar-collapsed .sidebar-hide-handle{
   gap:10px;
   padding:16px 16px;
   font-weight:800;
-  font-size:15px;
+  font-size:12px;
   cursor:pointer;
   transition:background var(--transition), transform var(--transition);
   border-left:4px solid transparent;
@@ -392,8 +392,9 @@ body.sidebar-collapsed .sidebar-hide-handle{
 .menu-items{
   display:none;
   padding:12px;
-  background:linear-gradient(180deg, rgba(7,10,28,.20), rgba(7,10,28,.10));
-  border-top:1px solid rgba(255,255,255,.06);
+  background:linear-gradient(180deg, rgba(8,18,52,.78), rgba(14,28,70,.62));
+  border-top:1px solid rgba(130,162,255,.28);
+  box-shadow:inset 0 1px 0 rgba(196,214,255,.18);
 }
 
 .menu-group.open .menu-items{
@@ -448,7 +449,7 @@ body.sidebar-collapsed .sidebar-hide-handle{
 
 .report-btn-left i{
   opacity:.95;
-  font-size:14px;
+  font-size:11px;
 }
 
 .report-btn-left span{
@@ -456,16 +457,24 @@ body.sidebar-collapsed .sidebar-hide-handle{
   overflow:hidden;
   text-overflow:ellipsis;
   font-weight:700;
-  font-size:14px;
+  font-size:11px;
   color:inherit;
 }
 
 .report-btn-meta{
   display:flex;
   align-items:center;
-  gap:6px;
-  flex-wrap:wrap;
+  gap:4px;
+  flex-wrap:nowrap;
   justify-content:flex-end;
+  flex-shrink:0;
+  max-width:46%;
+  overflow:hidden;
+}
+
+.report-btn .badge{
+  font-size:8px;
+  padding:2px 5px;
 }
     .badge{
       font-size:10px;
@@ -501,10 +510,10 @@ body.sidebar-collapsed .sidebar-hide-handle{
     .toolbar{
       background:var(--panel);
       border-bottom:1px solid #e8ebf5;
-      padding:12px 16px;
+      padding:8px 12px;
       display:flex;
       align-items:center;
-      gap:10px;
+      gap:8px;
       flex-wrap:wrap;
       z-index:10;
       box-shadow:0 1px 0 rgba(18,24,51,.03);
@@ -523,7 +532,7 @@ body.sidebar-collapsed .sidebar-hide-handle{
       border:1px solid #e5eaf6;
       color:var(--text);
       border-radius:12px;
-      height:40px;
+      height:34px;
       padding:0 12px;
       display:inline-flex;
       align-items:center;
@@ -545,13 +554,13 @@ body.sidebar-collapsed .sidebar-hide-handle{
       min-width:0;
       min-height:0;
       position:relative;
-      padding:16px;
+      padding:8px;
       overflow:hidden;
     }
 
     .home-screen, .report-screen{
       position:absolute;
-      inset:16px;
+      inset:8px;
       border-radius:18px;
       overflow:hidden;
       background:var(--panel);
@@ -725,12 +734,12 @@ body.sidebar-collapsed .sidebar-hide-handle{
 
     /* Reduced top frame bar for more report space */
     .frame-head{
-      min-height:44px;
+      min-height:36px;
       display:flex;
       align-items:center;
       justify-content:flex-end;
       gap:10px;
-      padding:8px 12px;
+      padding:6px 8px;
       background:#f8faff;
       border-bottom:1px solid #e5ebf5;
     }
@@ -1699,6 +1708,25 @@ function syncFloatingHandles() {
   if (els.metaHideHandle) {
     els.metaHideHandle.style.right = `${Math.max(metaWidth - 2, 0)}px`;
   }
+}
+
+function getPanelTransitionDurationMs() {
+  const transition = getComputedStyle(document.documentElement)
+    .getPropertyValue("--transition")
+    .trim();
+  const durationToken = transition.split(" ")[0] || "240ms";
+
+  if (durationToken.endsWith("ms")) return parseFloat(durationToken) || 240;
+  if (durationToken.endsWith("s")) return (parseFloat(durationToken) || 0.24) * 1000;
+  return 240;
+}
+
+function syncFloatingHandlesAfterTransition() {
+  syncFloatingHandles();
+  window.requestAnimationFrame(() => {
+    window.requestAnimationFrame(syncFloatingHandles);
+  });
+  window.setTimeout(syncFloatingHandles, getPanelTransitionDurationMs() + 60);
 }
 </script>
   <script>
@@ -2700,22 +2728,24 @@ function syncFloatingHandles() {
       return `<span class="badge ${cls}">${text}</span>`;
     }
 
-    function renderStatusBadges(report) {
+    function renderStatusBadges(report, options = {}) {
+      const { compact = false, max = Infinity } = options;
       const badges = [];
-      if ((report.status || []).includes("NEW")) badges.push(createBadge("NEW", "new"));
-      if ((report.status || []).includes("UPDATED")) badges.push(createBadge("UPDATED", "updated"));
+
+      if ((report.status || []).includes("NEW")) badges.push(createBadge(compact ? "NEW" : "NEW", "new"));
+      if ((report.status || []).includes("UPDATED")) badges.push(createBadge(compact ? "UPD" : "UPDATED", "updated"));
       if ((report.status || []).includes("BETA")) badges.push(createBadge("BETA", "beta"));
 
       const accessMap = {
         "Public": createBadge("Public", "public"),
-        "Internal Access Required": createBadge("Internal Access", "internal"),
-        "Dynamics Login Required": createBadge("Dynamics Login", "dynamics"),
+        "Internal Access Required": createBadge(compact ? "Internal" : "Internal Access", "internal"),
+        "Dynamics Login Required": createBadge(compact ? "Dynamics" : "Dynamics Login", "dynamics"),
         "External Link": createBadge("External", "external")
       };
       if (accessMap[report.access]) badges.push(accessMap[report.access]);
 
-      if (isStale(report.lastUpdated)) badges.push(createBadge("Stale Review", "stale"));
-      return badges.join("");
+      if (isStale(report.lastUpdated)) badges.push(createBadge(compact ? "Stale" : "Stale Review", "stale"));
+      return badges.slice(0, max).join("");
     }
 
     function isStale(dateString) {
@@ -2900,7 +2930,7 @@ function syncFloatingHandles() {
               <span>${report.title}</span>
             </div>
             <div class="report-btn-meta">
-              ${renderStatusBadges(report)}
+              ${renderStatusBadges(report, { compact: true, max: 1 })}
             </div>
           `;
 
@@ -3530,12 +3560,12 @@ function syncFloatingHandles() {
 
     function setSidebarCollapsed(collapsed) {
   document.body.classList.toggle("sidebar-collapsed", collapsed);
-  setTimeout(syncFloatingHandles, 20);
+  syncFloatingHandlesAfterTransition();
 }
 
 function setMetaCollapsed(collapsed) {
   document.body.classList.toggle("meta-collapsed", collapsed);
-  setTimeout(syncFloatingHandles, 20);
+  syncFloatingHandlesAfterTransition();
 }
 
     function initTopButtons() {
@@ -3675,6 +3705,8 @@ function setMetaCollapsed(collapsed) {
       checkAuthSession();
       loadReportFromUrl();
 syncFloatingHandles();
+els.sidebar?.addEventListener("transitionend", syncFloatingHandles);
+els.rightPanelMeta?.addEventListener("transitionend", syncFloatingHandles);
 window.addEventListener("resize", syncFloatingHandles);
 window.addEventListener("scroll", syncFloatingHandles, true);
     }
