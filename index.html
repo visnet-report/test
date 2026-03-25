@@ -669,25 +669,6 @@ body.sidebar-collapsed .sidebar-hide-handle{
       font-size:13px;
     }
 
-    .resource-hover-box{
-      margin:0 12px 12px;
-      border:1px solid #d9e6f8;
-      border-left:4px solid var(--accent);
-      border-radius:12px;
-      background:#f5f9ff;
-      padding:10px 12px;
-      font-size:13px;
-      color:#425072;
-      line-height:1.45;
-      min-height:64px;
-    }
-    .resource-hover-box strong{
-      display:block;
-      color:var(--brand);
-      margin-bottom:4px;
-      font-size:14px;
-    }
-
     .resource-table{
       width:100%;
       border-collapse:collapse;
@@ -1482,6 +1463,10 @@ body.meta-collapsed .meta-hide-handle{
       </div>
 
       <div class="header-right">
+        <button class="ghost-btn" id="modeSwitchBtn">
+          <i class="fas fa-layer-group"></i>
+          Mode: Advanced
+        </button>
         <button class="ghost-btn" id="openResourcesBtn">
           <i class="fas fa-folder-tree"></i>
           Resources
@@ -1772,10 +1757,6 @@ body.meta-collapsed .meta-hide-handle{
                       <option value="name_asc">Name A-Z</option>
                     </select>
                   </div>
-                  <div class="resource-hover-box" id="resourceHoverBox">
-                    <strong>Hover any file</strong>
-                    The file summary will appear here for quick context before opening.
-                  </div>
                   <div style="overflow:auto; min-height:0;">
                     <table class="resource-table">
                       <thead>
@@ -1876,6 +1857,33 @@ body.meta-collapsed .meta-hide-handle{
       </div>
 
       <div class="notes-list" id="releaseNotesList"></div>
+    </div>
+  </div>
+
+  <div class="modal" id="modeSelectModal">
+    <div class="modal-card" style="max-width:720px;">
+      <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:16px;">
+        <div>
+          <h2>Choose Portal Experience</h2>
+          <div class="muted">Pick a focused Lite experience or the full Advanced intelligence portal.</div>
+        </div>
+        <button class="secondary-btn" data-close-modal="modeSelectModal">
+          <i class="fas fa-xmark"></i> Close
+        </button>
+      </div>
+
+      <div class="grid cols-2" style="margin-top:14px;">
+        <div class="card">
+          <h4><i class="fas fa-gauge-simple-high"></i> Lite (Monthly Ops)</h4>
+          <p style="margin:0 0 12px; color:var(--muted);">Focused menu for monthly meetings with only essential Website Analytics + PPC reports.</p>
+          <button class="primary-btn" id="chooseLiteModeBtn"><i class="fas fa-check"></i> Use Lite Mode</button>
+        </div>
+        <div class="card">
+          <h4><i class="fas fa-chart-line"></i> Advanced</h4>
+          <p style="margin:0 0 12px; color:var(--muted);">Full report catalog and deep-dive analytics for broader insight exploration.</p>
+          <button class="secondary-btn" id="chooseAdvancedModeBtn"><i class="fas fa-check"></i> Use Advanced Mode</button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -2737,6 +2745,8 @@ function syncFloatingHandlesAfterTransition() {
       ea_vs_visnet_web: { left: "ea_ga", right: "visnet_ga" }
     };
 
+    const MODES = { lite: "lite", advanced: "advanced" };
+
     const resourceFiles = [
       { id: "monthly_2026_02", name: "Monthly Performance Report - Feb 2026.pdf", folder: "Monthly Reports", type: "PDF", owner: "Marketing Ops", updated: "2026-03-05", access: "Internal", tags: ["monthly", "performance", "pdf"], url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf", summary: "Executive monthly performance report with KPI scorecards, channel split and campaign movement." },
       { id: "monthly_2026_01", name: "Monthly Performance Report - Jan 2026.pdf", folder: "Monthly Reports", type: "PDF", owner: "Marketing Ops", updated: "2026-02-04", access: "Internal", tags: ["monthly", "kpi"], url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf", summary: "Historical monthly pack used for trend analysis and leadership reporting." },
@@ -2749,6 +2759,7 @@ function syncFloatingHandlesAfterTransition() {
     const state = {
       currentReportId: null,
       currentSlot: "left",
+      portalMode: MODES.advanced,
       currentView: "home",
       selectedResourceId: null,
       selectedResourceFolder: "All Files",
@@ -2766,7 +2777,8 @@ function syncFloatingHandlesAfterTransition() {
       recent: "dashboardRecentV3",
       views: "dashboardViewsV3",
       health: "dashboardHealthV3",
-      releaseSeen: "dashboardReleaseSeenV3"
+      releaseSeen: "dashboardReleaseSeenV3",
+      mode: "dashboardPortalModeV1"
     };
 
     const els = {
@@ -2781,6 +2793,7 @@ function syncFloatingHandlesAfterTransition() {
       sidebarHideHandle: document.getElementById("sidebarHideHandle"),
       showSidebarBtn: document.getElementById("showSidebarBtn"),
       goHomeBtn: document.getElementById("goHomeBtn"),
+      modeSwitchBtn: document.getElementById("modeSwitchBtn"),
       openResourcesBtn: document.getElementById("openResourcesBtn"),
       toggleCompareBtn: document.getElementById("toggleCompareBtn"),
       releaseNotesBtn: document.getElementById("releaseNotesBtn"),
@@ -2840,6 +2853,9 @@ function syncFloatingHandlesAfterTransition() {
 
       releaseNotesModal: document.getElementById("releaseNotesModal"),
       releaseNotesList: document.getElementById("releaseNotesList"),
+      modeSelectModal: document.getElementById("modeSelectModal"),
+      chooseLiteModeBtn: document.getElementById("chooseLiteModeBtn"),
+      chooseAdvancedModeBtn: document.getElementById("chooseAdvancedModeBtn"),
 
       homeFavourites: document.getElementById("homeFavourites"),
       homeMostViewed: document.getElementById("homeMostViewed"),
@@ -2858,12 +2874,50 @@ function syncFloatingHandlesAfterTransition() {
       resourceSearchInput: document.getElementById("resourceSearchInput"),
       resourceSortSelect: document.getElementById("resourceSortSelect"),
       resourceTableBody: document.getElementById("resourceTableBody"),
-      resourceHoverBox: document.getElementById("resourceHoverBox"),
       openSelectedResourceBtn: document.getElementById("openSelectedResourceBtn")
     };
 
     function getReportById(id) {
       return reports.find(r => r.id === id) || null;
+    }
+
+    function isLiteReport(report) {
+      const websiteAnalyticsGroups = new Set(["Products / Solutions", "VisNet Website", "EA Website"]);
+      const liteMqlIds = new Set(["mqls_fy26", "roi_dashboard"]);
+      const litePpcIds = new Set(["paid_linkedin", "ppc_google", "ppc_bing"]);
+
+      if (websiteAnalyticsGroups.has(report.group)) return true;
+      if (report.group === "MQLs & Key Insights" && liteMqlIds.has(report.id)) return true;
+      if (litePpcIds.has(report.id)) return true;
+      return false;
+    }
+
+    function normaliseLiteReport(report) {
+      const clone = { ...report };
+      if (["Products / Solutions", "VisNet Website", "EA Website", "MQLs & Key Insights"].includes(clone.group)) {
+        clone.group = "Website Analytics";
+      }
+
+      const ppcTitleMap = {
+        paid_linkedin: "LinkedIn Paid",
+        ppc_google: "Google Paid",
+        ppc_bing: "Microsoft Paid"
+      };
+      if (ppcTitleMap[clone.id]) {
+        clone.group = "PPC";
+        clone.title = ppcTitleMap[clone.id];
+        clone.fullTitle = `PPC - ${ppcTitleMap[clone.id]}`;
+      }
+      return clone;
+    }
+
+    function getReportsForCurrentMode() {
+      if (state.portalMode !== MODES.lite) return [...reports];
+      return reports.filter(isLiteReport).map(normaliseLiteReport);
+    }
+
+    function isReportVisibleInCurrentMode(reportId) {
+      return getReportsForCurrentMode().some(report => report.id === reportId);
     }
 
     function saveJSON(key, value) {
@@ -2996,6 +3050,36 @@ function syncFloatingHandlesAfterTransition() {
       }, timeout);
     }
 
+    function setPortalMode(mode, options = {}) {
+      const { persist = true, showToast = false } = options;
+      state.portalMode = mode === MODES.lite ? MODES.lite : MODES.advanced;
+      if (persist) localStorage.setItem(STORAGE_KEYS.mode, state.portalMode);
+
+      els.modeSwitchBtn.innerHTML = state.portalMode === MODES.lite
+        ? `<i class="fas fa-gauge-simple-high"></i> Mode: Lite`
+        : `<i class="fas fa-layer-group"></i> Mode: Advanced`;
+
+      renderMenu(els.menuSearchInput.value || "");
+      renderHome();
+      if (state.currentReportId && !isReportVisibleInCurrentMode(state.currentReportId)) {
+        showHome();
+      }
+      if (showToast) {
+        const modeLabel = state.portalMode === MODES.lite ? "Lite" : "Advanced";
+        toast("Mode updated", `${modeLabel} experience is now active.`, "success");
+      }
+    }
+
+    function initialisePortalMode(promptIfUnset = false) {
+      const saved = localStorage.getItem(STORAGE_KEYS.mode);
+      if (saved === MODES.lite || saved === MODES.advanced) {
+        setPortalMode(saved, { persist: false, showToast: false });
+        return;
+      }
+      setPortalMode(MODES.advanced, { persist: false, showToast: false });
+      if (promptIfUnset) openModal("modeSelectModal");
+    }
+
     function showTooltip(text, x, y) {
       els.tooltip.innerHTML = text;
       els.tooltip.style.left = `${Math.min(window.innerWidth - 300, x + 14)}px`;
@@ -3054,7 +3138,7 @@ function syncFloatingHandlesAfterTransition() {
 
     function filteredReports(searchValue = "") {
       const q = normalise(searchValue);
-      let arr = [...reports];
+      let arr = getReportsForCurrentMode();
 
       if (!q) return arr;
 
@@ -3082,20 +3166,22 @@ function syncFloatingHandlesAfterTransition() {
     function renderMenu(searchTerm = "") {
       const list = filteredReports(searchTerm);
       const grouped = groupReports(list);
-      const groupOrder = [
-        "MQLs & Key Insights",
-        "Lead Generation",
-        "VisNet Website",
-        "EA Website",
-        "Products / Solutions",
-        "SEO",
-        "Channels",
-        "PR",
-        "PPC",
-        "Social Media",
-        "Marketing Funnel",
-        "Special Reports"
-      ];
+      const groupOrder = state.portalMode === MODES.lite
+        ? ["Website Analytics", "PPC"]
+        : [
+          "MQLs & Key Insights",
+          "Lead Generation",
+          "VisNet Website",
+          "EA Website",
+          "Products / Solutions",
+          "SEO",
+          "Channels",
+          "PR",
+          "PPC",
+          "Social Media",
+          "Marketing Funnel",
+          "Special Reports"
+        ];
 
       els.menuContainer.innerHTML = "";
       els.searchEmptyState.classList.toggle("hidden", list.length !== 0);
@@ -3227,17 +3313,19 @@ function syncFloatingHandlesAfterTransition() {
     }
 
     function renderHome() {
+      const visibleReports = getReportsForCurrentMode();
+      const visibleIds = new Set(visibleReports.map(report => report.id));
       const favIds = getFavourites();
-      const favs = favIds.map(getReportById).filter(Boolean);
-      const recent = getRecent().map(getReportById).filter(Boolean);
+      const favs = favIds.map(getReportById).filter(Boolean).filter(report => visibleIds.has(report.id));
+      const recent = getRecent().map(getReportById).filter(Boolean).filter(report => visibleIds.has(report.id));
       const views = getViews();
-      const mostViewed = [...reports]
+      const mostViewed = visibleReports
         .map(r => ({ report: r, count: views[r.id] || 0 }))
         .sort((a, b) => b.count - a.count)
         .filter(x => x.count > 0)
         .slice(0, 6);
 
-      els.statTotalReports.textContent = reports.length;
+      els.statTotalReports.textContent = visibleReports.length;
       els.statFavourites.textContent = favs.length;
       els.statTopViews.textContent = mostViewed[0]?.count || 0;
       els.statRecent.textContent = recent.length;
@@ -3416,17 +3504,6 @@ function syncFloatingHandlesAfterTransition() {
         tr.addEventListener("mouseenter", (e) => showTooltip(hoverText, e.clientX, e.clientY));
         tr.addEventListener("mousemove", (e) => showTooltip(hoverText, e.clientX, e.clientY));
         tr.addEventListener("mouseleave", hideTooltip);
-        tr.addEventListener("mouseenter", () => {
-          els.resourceHoverBox.innerHTML = `<strong>${file.name}</strong>${file.summary}`;
-        });
-        tr.addEventListener("mouseleave", () => {
-          const selected = resourceFiles.find(item => item.id === state.selectedResourceId);
-          if (selected) {
-            els.resourceHoverBox.innerHTML = `<strong>${selected.name}</strong>${selected.summary}`;
-          } else {
-            els.resourceHoverBox.innerHTML = `<strong>Hover any file</strong>The file summary will appear here for quick context before opening.`;
-          }
-        });
         tr.addEventListener("dblclick", () => window.open(file.url, "_blank"));
         els.resourceTableBody.appendChild(tr);
       });
@@ -3435,10 +3512,6 @@ function syncFloatingHandlesAfterTransition() {
     function renderResourcesPage() {
       renderResourceFolders();
       renderResourceTable();
-      const selected = resourceFiles.find(item => item.id === state.selectedResourceId);
-      if (selected) {
-        els.resourceHoverBox.innerHTML = `<strong>${selected.name}</strong>${selected.summary}`;
-      }
     }
 
     function showHome() {
@@ -3512,6 +3585,10 @@ function syncFloatingHandlesAfterTransition() {
     function openReport(reportId, slot = "left") {
       const report = getReportById(reportId);
       if (!report) return;
+      if (!isReportVisibleInCurrentMode(reportId)) {
+        toast("Report unavailable in Lite mode", "Switch to Advanced mode to access this report.", "warning");
+        return;
+      }
 
       showReportScreen();
       state.currentReportId = reportId;
@@ -3831,6 +3908,7 @@ function syncFloatingHandlesAfterTransition() {
         localStorage.setItem(STORAGE_KEYS.auth, Date.now().toString());
         els.authOverlay.style.display = "none";
         els.authError.classList.remove("visible");
+        initialisePortalMode(true);
         toast("Access granted", "Welcome to the Marketing Intelligence Portal.", "success");
         maybeShowReleaseNotesOnFirstView();
       } else {
@@ -3856,6 +3934,7 @@ function syncFloatingHandlesAfterTransition() {
       const sixtyMinutes = 60 * 60 * 1000;
       if (lastAuthTime && (now - parseInt(lastAuthTime, 10) < sixtyMinutes)) {
         els.authOverlay.style.display = "none";
+        initialisePortalMode(true);
         maybeShowReleaseNotesOnFirstView();
       }
     }
@@ -3906,6 +3985,7 @@ function setMetaCollapsed(collapsed) {
       els.showSidebarBtn.addEventListener("click", () => setSidebarCollapsed(false));
 
       els.goHomeBtn.addEventListener("click", showHome);
+      els.modeSwitchBtn.addEventListener("click", () => openModal("modeSelectModal"));
       els.openResourcesBtn.addEventListener("click", showResources);
       els.toggleCompareBtn.addEventListener("click", () => {
         if (state.splitMode) disableCompareMode();
@@ -3941,7 +4021,7 @@ function setMetaCollapsed(collapsed) {
 
       els.homeOpenTopReportBtn.addEventListener("click", () => {
         const views = getViews();
-        const top = [...reports]
+        const top = getReportsForCurrentMode()
           .map(r => ({ report: r, count: views[r.id] || 0 }))
           .sort((a,b) => b.count - a.count)[0];
         if (top?.report) openReport(top.report.id, "left");
@@ -3963,6 +4043,16 @@ function setMetaCollapsed(collapsed) {
           return;
         }
         window.open(selected.url, "_blank");
+      });
+
+      els.chooseLiteModeBtn.addEventListener("click", () => {
+        setPortalMode(MODES.lite, { persist: true, showToast: true });
+        closeModal("modeSelectModal");
+      });
+
+      els.chooseAdvancedModeBtn.addEventListener("click", () => {
+        setPortalMode(MODES.advanced, { persist: true, showToast: true });
+        closeModal("modeSelectModal");
       });
     }
 
@@ -3991,7 +4081,7 @@ function setMetaCollapsed(collapsed) {
         btn.addEventListener("click", () => closeModal(btn.dataset.closeModal));
       });
 
-      [els.releaseNotesModal].forEach(modal => {
+      [els.releaseNotesModal, els.modeSelectModal].forEach(modal => {
         modal.addEventListener("click", e => {
           if (e.target === modal) modal.classList.remove("visible");
         });
@@ -4034,6 +4124,7 @@ function setMetaCollapsed(collapsed) {
 
     function init() {
       state.selectedResourceId = resourceFiles[0]?.id || null;
+      initialisePortalMode(false);
       renderReleaseNotes();
       renderMenu();
       renderFavourites();
