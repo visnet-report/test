@@ -558,7 +558,7 @@ body.sidebar-collapsed .sidebar-hide-handle{
       overflow:hidden;
     }
 
-    .home-screen, .report-screen{
+    .home-screen, .report-screen, .resources-screen{
       position:absolute;
       inset:8px;
       border-radius:18px;
@@ -579,6 +579,121 @@ body.sidebar-collapsed .sidebar-hide-handle{
     }
     .report-screen.visible{
       display:flex;
+    }
+
+    .resources-screen{
+      display:none;
+      padding:18px;
+      overflow:auto;
+    }
+
+    .resources-hero{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:14px;
+      flex-wrap:wrap;
+      margin-bottom:14px;
+      background:linear-gradient(135deg, #f5f8ff, #f2f8fb);
+      border:1px solid #e2ebf6;
+      border-radius:16px;
+      padding:14px;
+    }
+
+    .resources-layout{
+      display:grid;
+      grid-template-columns:230px 1fr;
+      gap:14px;
+      min-height:560px;
+    }
+
+    .resource-nav, .resource-files{
+      border:1px solid #e7ebf5;
+      border-radius:14px;
+      background:var(--panel);
+      box-shadow:var(--shadow-soft);
+      min-width:0;
+    }
+
+    .resource-nav{padding:12px;}
+    .resource-files{padding:0; overflow:hidden; display:flex; flex-direction:column;}
+
+    .resource-folder-btn{
+      width:100%;
+      border:1px solid #e5eaf6;
+      background:#fff;
+      border-radius:10px;
+      padding:10px 12px;
+      margin-bottom:8px;
+      text-align:left;
+      font-weight:700;
+      color:var(--brand);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      cursor:pointer;
+    }
+    .resource-folder-btn.active{
+      background:#edf4ff;
+      border-color:#d8e5fb;
+    }
+
+    .resource-toolbar{
+      padding:12px;
+      border-bottom:1px solid #ebeff8;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .resource-search{
+      flex:1;
+      min-width:220px;
+      position:relative;
+    }
+    .resource-search i{
+      position:absolute;
+      left:10px;
+      top:50%;
+      transform:translateY(-50%);
+      color:#7d88a4;
+      font-size:13px;
+    }
+    .resource-search input{
+      width:100%;
+      border:1px solid #dfe6f4;
+      border-radius:10px;
+      height:38px;
+      padding:0 10px 0 30px;
+      font-size:13px;
+    }
+
+    .resource-table{
+      width:100%;
+      border-collapse:collapse;
+      font-size:14px;
+    }
+    .resource-table th, .resource-table td{
+      padding:12px;
+      border-bottom:1px solid #eef2f9;
+      text-align:left;
+      vertical-align:middle;
+    }
+    .resource-table th{
+      font-size:11px;
+      color:#6f7897;
+      text-transform:uppercase;
+      letter-spacing:.4px;
+    }
+    .resource-row{
+      cursor:pointer;
+    }
+    .resource-row:hover{
+      background:#f8fbff;
+    }
+    .resource-row.active{
+      background:#edf4ff;
     }
 
     .home-hero{
@@ -1278,7 +1393,8 @@ body.meta-collapsed .meta-hide-handle{
   .header-center{justify-content:flex-start}
   .grid.cols-4,.grid.cols-3,.grid.cols-2{grid-template-columns:1fr}
   .toolbar{padding:10px}
-  .home-screen, .report-screen{inset:10px}
+  .home-screen, .report-screen, .resources-screen{inset:10px}
+  .resources-layout{grid-template-columns:1fr}
   .frames-wrap.split{
     flex-direction:column;
   }
@@ -1289,7 +1405,7 @@ body.meta-collapsed .meta-hide-handle{
 }
   </style>
 </head>
-<body>
+<body class="meta-collapsed">
   <div class="app">
     <div class="auth-overlay" id="authOverlay">
       <div class="auth-card">
@@ -1347,6 +1463,14 @@ body.meta-collapsed .meta-hide-handle{
       </div>
 
       <div class="header-right">
+        <button class="ghost-btn" id="modeSwitchBtn">
+          <i class="fas fa-layer-group"></i>
+          Mode: Advanced
+        </button>
+        <button class="ghost-btn" id="openResourcesBtn">
+          <i class="fas fa-folder-tree"></i>
+          Resources
+        </button>
         <button class="ghost-btn" id="toggleCompareBtn">
           <i class="fas fa-columns"></i>
           Compare
@@ -1603,6 +1727,53 @@ body.meta-collapsed .meta-hide-handle{
                 </div>
               </div>
             </section>
+
+            <section class="resources-screen" id="resourcesScreen">
+              <div class="resources-hero">
+                <div>
+                  <h3 style="margin:0; color:var(--brand);">Digital Marketing Resources</h3>
+                  <p style="margin:6px 0 0; color:var(--muted);">
+                    Browse monthly reports, funnel reports, PDFs and playbooks in a file-manager style view.
+                  </p>
+                </div>
+                <button class="primary-btn" id="openSelectedResourceBtn">
+                  <i class="fas fa-file-arrow-up"></i>
+                  Open Selected File
+                </button>
+              </div>
+
+              <div class="resources-layout">
+                <div class="resource-nav" id="resourceFolderNav"></div>
+
+                <div class="resource-files">
+                  <div class="resource-toolbar">
+                    <div class="resource-search">
+                      <i class="fas fa-search"></i>
+                      <input id="resourceSearchInput" type="text" placeholder="Search files, tags, owners..." />
+                    </div>
+                    <select id="resourceSortSelect" class="toolbar-pill" style="border:none; outline:none;">
+                      <option value="latest">Newest first</option>
+                      <option value="oldest">Oldest first</option>
+                      <option value="name_asc">Name A-Z</option>
+                    </select>
+                  </div>
+                  <div style="overflow:auto; min-height:0;">
+                    <table class="resource-table">
+                      <thead>
+                        <tr>
+                          <th>File</th>
+                          <th>Type</th>
+                          <th>Owner</th>
+                          <th>Updated</th>
+                          <th>Access</th>
+                        </tr>
+                      </thead>
+                      <tbody id="resourceTableBody"></tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </section>
           </div>
 
           <aside class="right-panel" id="rightPanelMeta">
@@ -1686,6 +1857,33 @@ body.meta-collapsed .meta-hide-handle{
       </div>
 
       <div class="notes-list" id="releaseNotesList"></div>
+    </div>
+  </div>
+
+  <div class="modal" id="modeSelectModal">
+    <div class="modal-card" style="max-width:720px;">
+      <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:16px;">
+        <div>
+          <h2>Choose Portal Experience</h2>
+          <div class="muted">Pick a focused Lite experience or the full Advanced intelligence portal.</div>
+        </div>
+        <button class="secondary-btn" data-close-modal="modeSelectModal">
+          <i class="fas fa-xmark"></i> Close
+        </button>
+      </div>
+
+      <div class="grid cols-2" style="margin-top:14px;">
+        <div class="card">
+          <h4><i class="fas fa-gauge-simple-high"></i> Lite (Monthly Ops)</h4>
+          <p style="margin:0 0 12px; color:var(--muted);">Focused menu for monthly meetings with only essential Website Analytics + PPC reports.</p>
+          <button class="primary-btn" id="chooseLiteModeBtn"><i class="fas fa-check"></i> Use Lite Mode</button>
+        </div>
+        <div class="card">
+          <h4><i class="fas fa-chart-line"></i> Advanced</h4>
+          <p style="margin:0 0 12px; color:var(--muted);">Full report catalog and deep-dive analytics for broader insight exploration.</p>
+          <button class="secondary-btn" id="chooseAdvancedModeBtn"><i class="fas fa-check"></i> Use Advanced Mode</button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -2547,9 +2745,24 @@ function syncFloatingHandlesAfterTransition() {
       ea_vs_visnet_web: { left: "ea_ga", right: "visnet_ga" }
     };
 
+    const MODES = { lite: "lite", advanced: "advanced" };
+
+    const resourceFiles = [
+      { id: "monthly_2026_02", name: "Monthly Performance Report - Feb 2026.pdf", folder: "Monthly Reports", type: "PDF", owner: "Marketing Ops", updated: "2026-03-05", access: "Internal", tags: ["monthly", "performance", "pdf"], url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf", summary: "Executive monthly performance report with KPI scorecards, channel split and campaign movement." },
+      { id: "monthly_2026_01", name: "Monthly Performance Report - Jan 2026.pdf", folder: "Monthly Reports", type: "PDF", owner: "Marketing Ops", updated: "2026-02-04", access: "Internal", tags: ["monthly", "kpi"], url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf", summary: "Historical monthly pack used for trend analysis and leadership reporting." },
+      { id: "funnel_q1", name: "Demand Funnel Report - Q1 2026.xlsx", folder: "Funnel Reports", type: "Spreadsheet", owner: "Growth Team", updated: "2026-03-11", access: "Internal", tags: ["funnel", "conversion", "pipeline"], url: "https://file-examples.com/wp-content/storage/2017/02/file_example_XLSX_50.xlsx", summary: "Detailed conversion funnel by source, stage and campaign with drop-off analysis." },
+      { id: "funnel_channel", name: "Funnel by Channel Model.pbix", folder: "Funnel Reports", type: "Power BI", owner: "BI Team", updated: "2026-03-10", access: "Restricted", tags: ["funnel", "channel", "power bi"], url: "https://app.powerbi.com", summary: "Interactive funnel model segmented by paid, organic, social and partner channels." },
+      { id: "playbook_paid_social", name: "Paid Social Optimisation Playbook.pdf", folder: "Playbooks", type: "PDF", owner: "Paid Media", updated: "2026-03-08", access: "Internal", tags: ["playbook", "social"], url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf", summary: "Optimisation framework for audience quality, creative fatigue and cost-per-lead control." },
+      { id: "seo_resources", name: "SEO Reporting Template.docx", folder: "Templates", type: "Document", owner: "SEO Team", updated: "2026-02-27", access: "Internal", tags: ["seo", "template"], url: "https://file-examples.com/wp-content/storage/2017/02/file-sample_100kB.docx", summary: "Reusable template for monthly SEO visibility reporting and technical actions." }
+    ];
+
     const state = {
       currentReportId: null,
       currentSlot: "left",
+      portalMode: MODES.advanced,
+      currentView: "home",
+      selectedResourceId: null,
+      selectedResourceFolder: "All Files",
       splitMode: false,
       activeFrame: "left",
       frames: {
@@ -2564,7 +2777,8 @@ function syncFloatingHandlesAfterTransition() {
       recent: "dashboardRecentV3",
       views: "dashboardViewsV3",
       health: "dashboardHealthV3",
-      releaseSeen: "dashboardReleaseSeenV3"
+      releaseSeen: "dashboardReleaseSeenV3",
+      mode: "dashboardPortalModeV1"
     };
 
     const els = {
@@ -2579,6 +2793,8 @@ function syncFloatingHandlesAfterTransition() {
       sidebarHideHandle: document.getElementById("sidebarHideHandle"),
       showSidebarBtn: document.getElementById("showSidebarBtn"),
       goHomeBtn: document.getElementById("goHomeBtn"),
+      modeSwitchBtn: document.getElementById("modeSwitchBtn"),
+      openResourcesBtn: document.getElementById("openResourcesBtn"),
       toggleCompareBtn: document.getElementById("toggleCompareBtn"),
       releaseNotesBtn: document.getElementById("releaseNotesBtn"),
       toggleMetaBtn: document.getElementById("toggleMetaBtn"),
@@ -2603,6 +2819,7 @@ function syncFloatingHandlesAfterTransition() {
 
       homeScreen: document.getElementById("homeScreen"),
       reportScreen: document.getElementById("reportScreen"),
+      resourcesScreen: document.getElementById("resourcesScreen"),
       framesWrap: document.getElementById("framesWrap"),
       compareToolbar: document.getElementById("compareToolbar"),
 
@@ -2636,6 +2853,9 @@ function syncFloatingHandlesAfterTransition() {
 
       releaseNotesModal: document.getElementById("releaseNotesModal"),
       releaseNotesList: document.getElementById("releaseNotesList"),
+      modeSelectModal: document.getElementById("modeSelectModal"),
+      chooseLiteModeBtn: document.getElementById("chooseLiteModeBtn"),
+      chooseAdvancedModeBtn: document.getElementById("chooseAdvancedModeBtn"),
 
       homeFavourites: document.getElementById("homeFavourites"),
       homeMostViewed: document.getElementById("homeMostViewed"),
@@ -2648,11 +2868,56 @@ function syncFloatingHandlesAfterTransition() {
       statRecent: document.getElementById("statRecent"),
 
       homeOpenTopReportBtn: document.getElementById("homeOpenTopReportBtn"),
-      homeOpenRecentBtn: document.getElementById("homeOpenRecentBtn")
+      homeOpenRecentBtn: document.getElementById("homeOpenRecentBtn"),
+
+      resourceFolderNav: document.getElementById("resourceFolderNav"),
+      resourceSearchInput: document.getElementById("resourceSearchInput"),
+      resourceSortSelect: document.getElementById("resourceSortSelect"),
+      resourceTableBody: document.getElementById("resourceTableBody"),
+      openSelectedResourceBtn: document.getElementById("openSelectedResourceBtn")
     };
 
     function getReportById(id) {
       return reports.find(r => r.id === id) || null;
+    }
+
+    function isLiteReport(report) {
+      const websiteAnalyticsGroups = new Set(["Products / Solutions", "VisNet Website", "EA Website"]);
+      const liteMqlIds = new Set(["mqls_fy26", "roi_dashboard"]);
+      const litePpcIds = new Set(["paid_linkedin", "ppc_google", "ppc_bing"]);
+
+      if (websiteAnalyticsGroups.has(report.group)) return true;
+      if (report.group === "MQLs & Key Insights" && liteMqlIds.has(report.id)) return true;
+      if (litePpcIds.has(report.id)) return true;
+      return false;
+    }
+
+    function normaliseLiteReport(report) {
+      const clone = { ...report };
+      if (["Products / Solutions", "VisNet Website", "EA Website", "MQLs & Key Insights"].includes(clone.group)) {
+        clone.group = "Website Analytics";
+      }
+
+      const ppcTitleMap = {
+        paid_linkedin: "LinkedIn Paid",
+        ppc_google: "Google Paid",
+        ppc_bing: "Microsoft Paid"
+      };
+      if (ppcTitleMap[clone.id]) {
+        clone.group = "PPC";
+        clone.title = ppcTitleMap[clone.id];
+        clone.fullTitle = `PPC - ${ppcTitleMap[clone.id]}`;
+      }
+      return clone;
+    }
+
+    function getReportsForCurrentMode() {
+      if (state.portalMode !== MODES.lite) return [...reports];
+      return reports.filter(isLiteReport).map(normaliseLiteReport);
+    }
+
+    function isReportVisibleInCurrentMode(reportId) {
+      return getReportsForCurrentMode().some(report => report.id === reportId);
     }
 
     function saveJSON(key, value) {
@@ -2785,6 +3050,36 @@ function syncFloatingHandlesAfterTransition() {
       }, timeout);
     }
 
+    function setPortalMode(mode, options = {}) {
+      const { persist = true, showToast = false } = options;
+      state.portalMode = mode === MODES.lite ? MODES.lite : MODES.advanced;
+      if (persist) localStorage.setItem(STORAGE_KEYS.mode, state.portalMode);
+
+      els.modeSwitchBtn.innerHTML = state.portalMode === MODES.lite
+        ? `<i class="fas fa-gauge-simple-high"></i> Mode: Lite`
+        : `<i class="fas fa-layer-group"></i> Mode: Advanced`;
+
+      renderMenu(els.menuSearchInput.value || "");
+      renderHome();
+      if (state.currentReportId && !isReportVisibleInCurrentMode(state.currentReportId)) {
+        showHome();
+      }
+      if (showToast) {
+        const modeLabel = state.portalMode === MODES.lite ? "Lite" : "Advanced";
+        toast("Mode updated", `${modeLabel} experience is now active.`, "success");
+      }
+    }
+
+    function initialisePortalMode(promptIfUnset = false) {
+      const saved = localStorage.getItem(STORAGE_KEYS.mode);
+      if (saved === MODES.lite || saved === MODES.advanced) {
+        setPortalMode(saved, { persist: false, showToast: false });
+        return;
+      }
+      setPortalMode(MODES.advanced, { persist: false, showToast: false });
+      if (promptIfUnset) openModal("modeSelectModal");
+    }
+
     function showTooltip(text, x, y) {
       els.tooltip.innerHTML = text;
       els.tooltip.style.left = `${Math.min(window.innerWidth - 300, x + 14)}px`;
@@ -2843,7 +3138,7 @@ function syncFloatingHandlesAfterTransition() {
 
     function filteredReports(searchValue = "") {
       const q = normalise(searchValue);
-      let arr = [...reports];
+      let arr = getReportsForCurrentMode();
 
       if (!q) return arr;
 
@@ -2871,20 +3166,22 @@ function syncFloatingHandlesAfterTransition() {
     function renderMenu(searchTerm = "") {
       const list = filteredReports(searchTerm);
       const grouped = groupReports(list);
-      const groupOrder = [
-        "MQLs & Key Insights",
-        "Lead Generation",
-        "VisNet Website",
-        "EA Website",
-        "Products / Solutions",
-        "SEO",
-        "Channels",
-        "PR",
-        "PPC",
-        "Social Media",
-        "Marketing Funnel",
-        "Special Reports"
-      ];
+      const groupOrder = state.portalMode === MODES.lite
+        ? ["Website Analytics", "PPC"]
+        : [
+          "MQLs & Key Insights",
+          "Lead Generation",
+          "VisNet Website",
+          "EA Website",
+          "Products / Solutions",
+          "SEO",
+          "Channels",
+          "PR",
+          "PPC",
+          "Social Media",
+          "Marketing Funnel",
+          "Special Reports"
+        ];
 
       els.menuContainer.innerHTML = "";
       els.searchEmptyState.classList.toggle("hidden", list.length !== 0);
@@ -3016,17 +3313,19 @@ function syncFloatingHandlesAfterTransition() {
     }
 
     function renderHome() {
+      const visibleReports = getReportsForCurrentMode();
+      const visibleIds = new Set(visibleReports.map(report => report.id));
       const favIds = getFavourites();
-      const favs = favIds.map(getReportById).filter(Boolean);
-      const recent = getRecent().map(getReportById).filter(Boolean);
+      const favs = favIds.map(getReportById).filter(Boolean).filter(report => visibleIds.has(report.id));
+      const recent = getRecent().map(getReportById).filter(Boolean).filter(report => visibleIds.has(report.id));
       const views = getViews();
-      const mostViewed = [...reports]
+      const mostViewed = visibleReports
         .map(r => ({ report: r, count: views[r.id] || 0 }))
         .sort((a, b) => b.count - a.count)
         .filter(x => x.count > 0)
         .slice(0, 6);
 
-      els.statTotalReports.textContent = reports.length;
+      els.statTotalReports.textContent = visibleReports.length;
       els.statFavourites.textContent = favs.length;
       els.statTopViews.textContent = mostViewed[0]?.count || 0;
       els.statRecent.textContent = recent.length;
@@ -3130,9 +3429,96 @@ function syncFloatingHandlesAfterTransition() {
       setFavourites(favs);
     }
 
+    function formatResourceDate(dateString) {
+      return new Date(dateString).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+    }
+
+    function getResourceFolders() {
+      return ["All Files", ...new Set(resourceFiles.map(file => file.folder))];
+    }
+
+    function getFilteredResources() {
+      const q = normalise(els.resourceSearchInput.value || "");
+      const folder = state.selectedResourceFolder;
+      const sort = els.resourceSortSelect.value || "latest";
+
+      let arr = resourceFiles.filter(file => {
+        const inFolder = folder === "All Files" || file.folder === folder;
+        if (!inFolder) return false;
+        if (!q) return true;
+        const hay = [file.name, file.type, file.owner, ...(file.tags || [])].join(" ").toLowerCase();
+        return hay.includes(q);
+      });
+
+      arr = arr.sort((a, b) => {
+        if (sort === "name_asc") return a.name.localeCompare(b.name);
+        if (sort === "oldest") return new Date(a.updated) - new Date(b.updated);
+        return new Date(b.updated) - new Date(a.updated);
+      });
+
+      return arr;
+    }
+
+    function renderResourceFolders() {
+      els.resourceFolderNav.innerHTML = `<h4 style="margin:0 0 12px; color:var(--brand);"><i class="fas fa-folder-tree"></i> Libraries</h4>`;
+      getResourceFolders().forEach(folder => {
+        const btn = document.createElement("button");
+        btn.className = `resource-folder-btn ${state.selectedResourceFolder === folder ? "active" : ""}`;
+        const count = folder === "All Files"
+          ? resourceFiles.length
+          : resourceFiles.filter(file => file.folder === folder).length;
+
+        btn.innerHTML = `<span><i class="fas fa-folder"></i> ${folder}</span><span class="badge internal">${count}</span>`;
+        btn.addEventListener("click", () => {
+          state.selectedResourceFolder = folder;
+          renderResourcesPage();
+        });
+        els.resourceFolderNav.appendChild(btn);
+      });
+    }
+
+    function renderResourceTable() {
+      const files = getFilteredResources();
+      els.resourceTableBody.innerHTML = "";
+
+      if (!files.length) {
+        els.resourceTableBody.innerHTML = `<tr><td colspan="5"><div class="empty-state">No files match this filter.</div></td></tr>`;
+        return;
+      }
+
+      files.forEach(file => {
+        const tr = document.createElement("tr");
+        tr.className = `resource-row ${state.selectedResourceId === file.id ? "active" : ""}`;
+        tr.innerHTML = `
+          <td><strong><i class="fas fa-file-lines" style="color:var(--brand);"></i> ${file.name}</strong><div class="mini-note">${file.folder}</div></td>
+          <td>${file.type}</td>
+          <td>${file.owner}</td>
+          <td>${formatResourceDate(file.updated)}</td>
+          <td><span class="badge ${file.access === "Restricted" ? "dynamics" : "internal"}">${file.access}</span></td>
+        `;
+        tr.addEventListener("click", () => {
+          state.selectedResourceId = file.id;
+          renderResourceTable();
+        });
+        const hoverText = `<strong>${file.name}</strong><br>${file.summary}`;
+        tr.addEventListener("mouseenter", (e) => showTooltip(hoverText, e.clientX, e.clientY));
+        tr.addEventListener("mousemove", (e) => showTooltip(hoverText, e.clientX, e.clientY));
+        tr.addEventListener("mouseleave", hideTooltip);
+        tr.addEventListener("dblclick", () => window.open(file.url, "_blank"));
+        els.resourceTableBody.appendChild(tr);
+      });
+    }
+
+    function renderResourcesPage() {
+      renderResourceFolders();
+      renderResourceTable();
+    }
+
     function showHome() {
       els.homeScreen.style.display = "block";
       els.reportScreen.classList.remove("visible");
+      els.resourcesScreen.style.display = "none";
+      state.currentView = "home";
       state.currentReportId = null;
       updateCurrentPill(null);
       updateBookmarkButton();
@@ -3144,7 +3530,24 @@ function syncFloatingHandlesAfterTransition() {
 
     function showReportScreen() {
       els.homeScreen.style.display = "none";
+      els.resourcesScreen.style.display = "none";
       els.reportScreen.classList.add("visible");
+      state.currentView = "report";
+    }
+
+    function showResources() {
+      els.homeScreen.style.display = "none";
+      els.reportScreen.classList.remove("visible");
+      els.resourcesScreen.style.display = "block";
+      state.currentView = "resources";
+      updateCurrentPill({
+        icon: "fas fa-folder-tree",
+        fullTitle: "Digital Marketing Resources",
+        group: "Resources",
+        title: "File Manager"
+      });
+      clearMetaPanel();
+      renderResourcesPage();
     }
 
     function updateActiveMenuButtons() {
@@ -3182,6 +3585,10 @@ function syncFloatingHandlesAfterTransition() {
     function openReport(reportId, slot = "left") {
       const report = getReportById(reportId);
       if (!report) return;
+      if (!isReportVisibleInCurrentMode(reportId)) {
+        toast("Report unavailable in Lite mode", "Switch to Advanced mode to access this report.", "warning");
+        return;
+      }
 
       showReportScreen();
       state.currentReportId = reportId;
@@ -3501,6 +3908,7 @@ function syncFloatingHandlesAfterTransition() {
         localStorage.setItem(STORAGE_KEYS.auth, Date.now().toString());
         els.authOverlay.style.display = "none";
         els.authError.classList.remove("visible");
+        initialisePortalMode(true);
         toast("Access granted", "Welcome to the Marketing Intelligence Portal.", "success");
         maybeShowReleaseNotesOnFirstView();
       } else {
@@ -3526,6 +3934,7 @@ function syncFloatingHandlesAfterTransition() {
       const sixtyMinutes = 60 * 60 * 1000;
       if (lastAuthTime && (now - parseInt(lastAuthTime, 10) < sixtyMinutes)) {
         els.authOverlay.style.display = "none";
+        initialisePortalMode(true);
         maybeShowReleaseNotesOnFirstView();
       }
     }
@@ -3576,6 +3985,8 @@ function setMetaCollapsed(collapsed) {
       els.showSidebarBtn.addEventListener("click", () => setSidebarCollapsed(false));
 
       els.goHomeBtn.addEventListener("click", showHome);
+      els.modeSwitchBtn.addEventListener("click", () => openModal("modeSelectModal"));
+      els.openResourcesBtn.addEventListener("click", showResources);
       els.toggleCompareBtn.addEventListener("click", () => {
         if (state.splitMode) disableCompareMode();
         else enableCompareMode();
@@ -3610,7 +4021,7 @@ function setMetaCollapsed(collapsed) {
 
       els.homeOpenTopReportBtn.addEventListener("click", () => {
         const views = getViews();
-        const top = [...reports]
+        const top = getReportsForCurrentMode()
           .map(r => ({ report: r, count: views[r.id] || 0 }))
           .sort((a,b) => b.count - a.count)[0];
         if (top?.report) openReport(top.report.id, "left");
@@ -3621,6 +4032,27 @@ function setMetaCollapsed(collapsed) {
         const recent = getRecent()[0];
         if (recent) openReport(recent, "left");
         else toast("No recent report", "You have not opened any reports yet.", "warning");
+      });
+
+      els.resourceSearchInput.addEventListener("input", renderResourceTable);
+      els.resourceSortSelect.addEventListener("change", renderResourceTable);
+      els.openSelectedResourceBtn.addEventListener("click", () => {
+        const selected = resourceFiles.find(file => file.id === state.selectedResourceId);
+        if (!selected) {
+          toast("No file selected", "Please select a resource file first.", "warning");
+          return;
+        }
+        window.open(selected.url, "_blank");
+      });
+
+      els.chooseLiteModeBtn.addEventListener("click", () => {
+        setPortalMode(MODES.lite, { persist: true, showToast: true });
+        closeModal("modeSelectModal");
+      });
+
+      els.chooseAdvancedModeBtn.addEventListener("click", () => {
+        setPortalMode(MODES.advanced, { persist: true, showToast: true });
+        closeModal("modeSelectModal");
       });
     }
 
@@ -3649,7 +4081,7 @@ function setMetaCollapsed(collapsed) {
         btn.addEventListener("click", () => closeModal(btn.dataset.closeModal));
       });
 
-      [els.releaseNotesModal].forEach(modal => {
+      [els.releaseNotesModal, els.modeSelectModal].forEach(modal => {
         modal.addEventListener("click", e => {
           if (e.target === modal) modal.classList.remove("visible");
         });
@@ -3691,6 +4123,8 @@ function setMetaCollapsed(collapsed) {
     }
 
     function init() {
+      state.selectedResourceId = resourceFiles[0]?.id || null;
+      initialisePortalMode(false);
       renderReleaseNotes();
       renderMenu();
       renderFavourites();
