@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Marketing Intelligence Portal</title>
+  <title>Marketing Activity Dashboard</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;800&display=swap');
@@ -1410,7 +1410,7 @@ body.meta-collapsed .meta-hide-handle{
     <div class="auth-overlay" id="authOverlay">
       <div class="auth-card">
         <img src="https://eatechnology.com/assets/img/logo.svg" alt="EA Technology logo" class="logo">
-        <h1>Marketing Intelligence Portal</h1>
+        <h1>Marketing Activity Dashboard</h1>
         <p>
           Welcome. This dashboard provides authorised access to marketing performance reporting, business unit reporting,
           campaign analytics, search visibility, PR reporting, funnel insights, and ROI-linked reporting.
@@ -1457,7 +1457,7 @@ body.meta-collapsed .meta-hide-handle{
       <div class="header-center">
         <img src="https://eatechnology.com/assets/img/logo.svg" alt="Company Logo" class="logo">
         <div class="title-wrap">
-          <h1 class="page-title">Marketing Intelligence Portal</h1>
+          <h1 class="page-title">Marketing Activity Dashboard</h1>
           <div class="page-subtitle" id="headerSubtitle">Advanced reporting hub for marketing, digital performance and business unit insights</div>
         </div>
       </div>
@@ -1575,7 +1575,7 @@ body.meta-collapsed .meta-hide-handle{
             <section class="home-screen" id="homeScreen">
               <div class="home-hero">
                 <div>
-                  <h3>Welcome to the Marketing Intelligence Portal</h3>
+                  <h3>Welcome to the Marketing Activity Dashboard</h3>
                   <p>
                     Use this hub to access marketing performance reporting, ROI-linked dashboards, website analytics,
                     search visibility reporting, PPC, social, PR, funnel analysis and business unit views.
@@ -1764,7 +1764,6 @@ body.meta-collapsed .meta-hide-handle{
                           <th>File</th>
                           <th>Type</th>
                           <th>Owner</th>
-                          <th>Updated</th>
                           <th>Access</th>
                         </tr>
                       </thead>
@@ -2948,11 +2947,12 @@ function syncFloatingHandlesAfterTransition() {
     }
 
     function isLiteReport(report) {
-      const websiteAnalyticsGroups = new Set(["Products / Solutions", "VisNet Website", "EA Website"]);
+      const websiteAnalyticsIds = new Set(["ea_ga", "visnet_ga", "ai_traffic"]);
       const liteMqlIds = new Set(["mqls_fy26", "roi_dashboard"]);
       const litePpcIds = new Set(["paid_linkedin", "ppc_google", "ppc_bing"]);
 
-      if (websiteAnalyticsGroups.has(report.group)) return true;
+      if (websiteAnalyticsIds.has(report.id)) return true;
+      if (report.group === "Products / Solutions") return true;
       if (report.group === "MQLs & Key Insights" && liteMqlIds.has(report.id)) return true;
       if (litePpcIds.has(report.id)) return true;
       return false;
@@ -2960,8 +2960,25 @@ function syncFloatingHandlesAfterTransition() {
 
     function normaliseLiteReport(report) {
       const clone = { ...report };
-      if (["Products / Solutions", "VisNet Website", "EA Website", "MQLs & Key Insights"].includes(clone.group)) {
-        clone.group = "Website Analytics";
+      const liteGroupMap = {
+        mqls_fy26: "FY26",
+        roi_dashboard: "ROI Dashboard",
+        ea_ga: "Website Analytics",
+        visnet_ga: "Website Analytics",
+        ai_traffic: "Website Analytics"
+      };
+
+      if (liteGroupMap[clone.id]) clone.group = liteGroupMap[clone.id];
+      if (clone.group === "Products / Solutions") clone.group = "Product / Solutions";
+
+      const liteTitleMap = {
+        ea_ga: "EA Technology",
+        visnet_ga: "VisNet",
+        ai_traffic: "AI Traffic"
+      };
+      if (liteTitleMap[clone.id]) {
+        clone.title = liteTitleMap[clone.id];
+        clone.fullTitle = `Website Analytics - ${liteTitleMap[clone.id]}`;
       }
 
       const ppcTitleMap = {
@@ -3233,7 +3250,7 @@ function syncFloatingHandlesAfterTransition() {
       const list = filteredReports(searchTerm);
       const grouped = groupReports(list);
       const groupOrder = state.portalMode === MODES.lite
-        ? ["Website Analytics", "PPC"]
+        ? ["FY26", "ROI Dashboard", "Website Analytics", "Product / Solutions", "PPC"]
         : [
           "MQLs & Key Insights",
           "Lead Generation",
@@ -3453,7 +3470,7 @@ function syncFloatingHandlesAfterTransition() {
       if (!report) {
         els.currentReportPill.innerHTML = `<i class="fas fa-house"></i><span>Home</span>`;
         els.breadcrumbs.innerHTML = `<span>Home</span>`;
-        document.title = "Marketing Intelligence Portal";
+        document.title = "Marketing Activity Dashboard";
         return;
       }
 
@@ -3548,7 +3565,7 @@ function syncFloatingHandlesAfterTransition() {
       els.resourceTableBody.innerHTML = "";
 
       if (!files.length) {
-        els.resourceTableBody.innerHTML = `<tr><td colspan="5"><div class="empty-state">No files match this filter.</div></td></tr>`;
+        els.resourceTableBody.innerHTML = `<tr><td colspan="4"><div class="empty-state">No files match this filter.</div></td></tr>`;
         return;
       }
 
@@ -3562,8 +3579,10 @@ function syncFloatingHandlesAfterTransition() {
           <td><strong><i class="fas fa-file-lines" style="color:var(--brand);"></i> ${file.name}</strong><div class="mini-note">${file.folder}</div></td>
           <td>${file.type}</td>
           <td>${file.owner}</td>
-          <td>${formatResourceDate(file.updated)}</td>
-          <td><span class="badge ${accessClass}">${file.access}</span></td>
+          <td>
+            <span class="badge ${accessClass}" style="margin-right:8px;">${file.access}</span>
+            <a class="chip" href="${file.url}" target="_blank" rel="noopener noreferrer" style="text-decoration:none;">Open</a>
+          </td>
         `;
         tr.addEventListener("click", () => {
           state.selectedResourceId = file.id;
@@ -3793,7 +3812,6 @@ function syncFloatingHandlesAfterTransition() {
         ["Type", report.type],
         ["Access", report.access],
         ["Status", (report.status || []).join(", ") || "Standard"],
-        ["Last Updated", formatPrettyDate(report.lastUpdated)],
         ["Tags", (report.tags || []).join(", ")],
         ["URL Type", report.url.includes("lookerstudio.google.com") ? "Embedded Looker Studio" : "External / restricted report"]
       ];
@@ -3983,7 +4001,7 @@ function syncFloatingHandlesAfterTransition() {
         els.authOverlay.style.display = "none";
         els.authError.classList.remove("visible");
         initialisePortalMode(true);
-        toast("Access granted", "Welcome to the Marketing Intelligence Portal.", "success");
+        toast("Access granted", "Welcome to the Marketing Activity Dashboard.", "success");
         maybeShowReleaseNotesOnFirstView();
       } else {
         els.authError.classList.add("visible");
