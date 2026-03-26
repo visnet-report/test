@@ -2748,12 +2748,78 @@ function syncFloatingHandlesAfterTransition() {
     const MODES = { lite: "lite", advanced: "advanced" };
 
     const resourceFiles = [
-      { id: "monthly_2026_02", name: "Monthly Performance Report - Feb 2026.pdf", folder: "Monthly Reports", type: "PDF", owner: "Marketing Ops", updated: "2026-03-05", access: "Internal", tags: ["monthly", "performance", "pdf"], url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf", summary: "Executive monthly performance report with KPI scorecards, channel split and campaign movement." },
-      { id: "monthly_2026_01", name: "Monthly Performance Report - Jan 2026.pdf", folder: "Monthly Reports", type: "PDF", owner: "Marketing Ops", updated: "2026-02-04", access: "Internal", tags: ["monthly", "kpi"], url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf", summary: "Historical monthly pack used for trend analysis and leadership reporting." },
-      { id: "funnel_q1", name: "Demand Funnel Report - Q1 2026.xlsx", folder: "Funnel Reports", type: "Spreadsheet", owner: "Growth Team", updated: "2026-03-11", access: "Internal", tags: ["funnel", "conversion", "pipeline"], url: "https://file-examples.com/wp-content/storage/2017/02/file_example_XLSX_50.xlsx", summary: "Detailed conversion funnel by source, stage and campaign with drop-off analysis." },
-      { id: "funnel_channel", name: "Funnel by Channel Model.pbix", folder: "Funnel Reports", type: "Power BI", owner: "BI Team", updated: "2026-03-10", access: "Restricted", tags: ["funnel", "channel", "power bi"], url: "https://app.powerbi.com", summary: "Interactive funnel model segmented by paid, organic, social and partner channels." },
-      { id: "playbook_paid_social", name: "Paid Social Optimisation Playbook.pdf", folder: "Playbooks", type: "PDF", owner: "Paid Media", updated: "2026-03-08", access: "Internal", tags: ["playbook", "social"], url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf", summary: "Optimisation framework for audience quality, creative fatigue and cost-per-lead control." },
-      { id: "seo_resources", name: "SEO Reporting Template.docx", folder: "Templates", type: "Document", owner: "SEO Team", updated: "2026-02-27", access: "Internal", tags: ["seo", "template"], url: "https://file-examples.com/wp-content/storage/2017/02/file-sample_100kB.docx", summary: "Reusable template for monthly SEO visibility reporting and technical actions." }
+      {
+        id: "marketing_funnel_review",
+        name: "Marketing Funnel Review",
+        folder: "Advanced Marketing Toolkit",
+        type: "Spreadsheet",
+        owner: "Marketing Ops",
+        updated: "2026-03-26",
+        access: "Internal",
+        tags: ["funnel", "review", "monthly"],
+        url: "https://eatl-my.sharepoint.com/:x:/r/personal/rameez_majeed_eatechnology_com/_layouts/15/doc2.aspx?sourcedoc=%7B90FCC780-DEBF-40BC-BC85-8400787D0C38%7D&file=Marketing%20Report%20VisNet.xlsx&action=default&mobileredirect=true&DefaultItemOpen=1",
+        summary: "Monthly funnel review workbook for VisNet and campaign-stage tracking."
+      },
+      {
+        id: "monthly_reporting_actions",
+        name: "Monthly Reporting Actions",
+        folder: "Advanced Marketing Toolkit",
+        type: "Spreadsheet",
+        owner: "Marketing Ops",
+        updated: "2026-03-26",
+        access: "Internal",
+        tags: ["monthly", "actions", "reporting"],
+        url: "https://eatl-my.sharepoint.com/:x:/r/personal/rameez_majeed_eatechnology_com/_layouts/15/doc2.aspx?sourcedoc=%7B90FCC780-DEBF-40BC-BC85-8400787D0C38%7D&file=Marketing%20Report%20VisNet.xlsx&action=default&mobileredirect=true&DefaultItemOpen=1",
+        summary: "Action log and follow-up tracker for monthly ops reporting meetings."
+      },
+      {
+        id: "utm_tool",
+        name: "UTM Tool",
+        folder: "Advanced Marketing Toolkit",
+        type: "Spreadsheet",
+        owner: "Marketing Team",
+        updated: "2026-03-26",
+        access: "Internal",
+        tags: ["utm", "tracking", "campaign"],
+        url: "https://eatl.sharepoint.com/:x:/s/EAMarketing/IQCSiVEc6UtxSYX993eJ0RB2AdfaeGKnuZTV5qVUcGSQa6M?e=enxlCo&nav=MTVfezAwMDAwMDAwLTAwMDEtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMH0",
+        summary: "Central tool for campaign tagging and UTM consistency across channels."
+      },
+      {
+        id: "keyword_content_requirements",
+        name: "Keyword & Content Requirements",
+        folder: "Advanced Marketing Toolkit",
+        type: "Document",
+        owner: "SEO Team",
+        updated: "2026-03-26",
+        access: "Internal",
+        tags: ["seo", "keyword", "content"],
+        url: "https://eatl.sharepoint.com/:w:/s/EAMarketing/IQA6mosMUIi3RYzLioua6qhzAaRQjXN6FH3qKlsLFIdh05o?e=Sz53TJ",
+        summary: "SEO and content requirement guidelines for campaign planning and execution."
+      },
+      {
+        id: "marketing_process",
+        name: "Marketing Process",
+        folder: "Advanced Marketing Toolkit",
+        type: "Spreadsheet",
+        owner: "Marketing Operations",
+        updated: "2026-03-26",
+        access: "Internal",
+        tags: ["process", "operations", "workflow"],
+        url: "https://eatl.sharepoint.com/:x:/r/sites/EAMarketing/_layouts/15/Doc.aspx?sourcedoc=%7B6296BCEE-8512-4F3B-8463-6DD69B798BAF%7D&file=Marketing%20Processes.xlsx&action=default&mobileredirect=true&DefaultItemOpen=1",
+        summary: "Reference process map for marketing operations workflows and governance."
+      },
+      {
+        id: "social_media_assistant",
+        name: "Social Media Assistant",
+        folder: "AI Assistants",
+        type: "Assistant",
+        owner: "Marketing Team",
+        updated: "2026-03-26",
+        access: "External",
+        tags: ["ai", "social media", "assistant"],
+        url: "https://chatgpt.com/g/g-696e272b44a88191bade5cb3aaa362b0-social-media-assistant",
+        summary: "AI assistant to speed up social post ideation, messaging and campaign planning."
+      }
     ];
 
     const state = {
@@ -3489,12 +3555,15 @@ function syncFloatingHandlesAfterTransition() {
       files.forEach(file => {
         const tr = document.createElement("tr");
         tr.className = `resource-row ${state.selectedResourceId === file.id ? "active" : ""}`;
+        const accessClass = file.access === "Restricted"
+          ? "dynamics"
+          : (file.access === "External" ? "external" : "internal");
         tr.innerHTML = `
           <td><strong><i class="fas fa-file-lines" style="color:var(--brand);"></i> ${file.name}</strong><div class="mini-note">${file.folder}</div></td>
           <td>${file.type}</td>
           <td>${file.owner}</td>
           <td>${formatResourceDate(file.updated)}</td>
-          <td><span class="badge ${file.access === "Restricted" ? "dynamics" : "internal"}">${file.access}</span></td>
+          <td><span class="badge ${accessClass}">${file.access}</span></td>
         `;
         tr.addEventListener("click", () => {
           state.selectedResourceId = file.id;
@@ -3536,6 +3605,11 @@ function syncFloatingHandlesAfterTransition() {
     }
 
     function showResources() {
+      if (state.portalMode === MODES.lite) {
+        toast("Resources available in Advanced mode", "Switch to Advanced mode to access the full resource library.", "warning", 3600);
+        openModal("modeSelectModal");
+        return;
+      }
       els.homeScreen.style.display = "none";
       els.reportScreen.classList.remove("visible");
       els.resourcesScreen.style.display = "block";
